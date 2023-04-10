@@ -1,24 +1,33 @@
 package searchengine.model;
 
-import org.springframework.lang.NonNull;
+import lombok.Getter;
+import lombok.Setter;
+import searchengine.model.StatusOption;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Date;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "Sites")
 public class Site {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(nullable = false)
     private int id;
-    @Column(columnDefinition = "enum", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "enum('INDEXING', 'INDEXED', 'FAILED')", nullable = false)
     private StatusOption status;
-    @Column(name = "status_time", nullable = false)
+    @Column(name = "status_time", nullable = false, columnDefinition = "DATETIME")
     private LocalDateTime statusTime;
-    @Column(name = "last_error")
+    @Column(name = "last_error", nullable = false, columnDefinition = "TEXT")
     private String lastError;
-    @NonNull
+    @Column(name = "url", nullable = false, columnDefinition = "VARCHAR(255)")
     private String url;
-    @NonNull
+    @Column(name = "name", nullable = false, columnDefinition = "VARCHAR(255)")
     private String name;
+
+
 }

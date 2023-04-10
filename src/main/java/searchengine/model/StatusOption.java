@@ -4,5 +4,4 @@ public enum StatusOption {
     INDEXING,
     INDEXED,
     FAILED
-
 }
