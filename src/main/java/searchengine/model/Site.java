@@ -16,7 +16,7 @@ public class Site {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(nullable = false)
-    private int id;
+    private Integer id;
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "enum('INDEXING', 'INDEXED', 'FAILED')", nullable = false)
     private StatusOption status;
