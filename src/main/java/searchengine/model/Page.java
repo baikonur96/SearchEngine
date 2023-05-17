@@ -13,17 +13,15 @@ import javax.persistence.Index;
 @Getter
 @Setter
 @Entity
-@Table(name = "Pages", indexes = {@Index(name = "path_index", columnList = "path", unique = false)})
+@Table(name = "Pages")
 public class Page {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(nullable = false)
     private Integer id;
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn (name = "site_id", nullable = false, foreignKey = @ForeignKey(name="k_page_site"))
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @BatchSize(size = 10)
-    private Site site;
+    @ManyToOne(targetEntity = Site.class)
+    @JoinColumn(name = "site_id", nullable = false, insertable = false, updatable = false)
+    private Site siteId;
     @Column(columnDefinition = "TEXT NOT NULL, Index (path(128))", name = "path")
     private String path;
     @Column(nullable = false)

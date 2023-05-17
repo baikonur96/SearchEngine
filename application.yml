@@ -15,5 +15,5 @@ indexing-settings:
       name: Skillbox
     - url: https://www.playback.ru
       name: PlayBack.Ru
-   # - url: https://www.yandex.ru
-   #   name: Yandex.Ru
+    - url: https://www.yandex.ru
+      name: Yandex.Ru
