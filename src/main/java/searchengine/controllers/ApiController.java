@@ -8,10 +8,13 @@ import searchengine.services.StatisticsService;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ForkJoinPool;
 
 @RestController
 @RequestMapping("/api")
 public class ApiController {
+
+    public final String START_URL = "https://skillbox.ru/";
 
     private final StatisticsService statisticsService;
 
@@ -28,14 +31,23 @@ public class ApiController {
     public ResponseEntity<Map<String, Boolean>> StartIndex() {
         HashMap<String, Boolean> response = new HashMap<>();
         String sessionId = RequestContextHolder.currentRequestAttributes().getSessionId();
-        System.out.println("LOL");
 
-        return ResponseEntity.ok(response);
+
+
+            StringBuffer result  = new StringBuffer();
+
+            ForkJoinPool pool = new ForkJoinPool();
+            result.append(pool.invoke(new Sta))
+        //    result.append(pool.invoke(new services.StartIndexingService(START_URL, 0)));
+
+
+
+            return ResponseEntity.ok(response);
     }
 
     @PostMapping("/indexPage")
-    public ResponseEntity<Map<String, Boolean>> AddUpdateIndex(@RequestParam String url) {
-        HashMap<String, Boolean> response = new HashMap<>();
+    public ResponseEntity<Boolean> AddUpdateIndex(@RequestParam String url) {
+        Boolean response = true;
         String sessionId = RequestContextHolder.currentRequestAttributes().getSessionId();
         System.out.println(url);
 
