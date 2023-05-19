@@ -3,9 +3,6 @@ package searchengine.model;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.BatchSize;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 @Getter
@@ -13,16 +10,16 @@ import javax.persistence.*;
 @NoArgsConstructor
 @Entity
 @Table(name = "indexs")
-public class Index {
+public class IndexModel {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
-    @ManyToOne(targetEntity = Page.class)
+    @ManyToOne(targetEntity = PageModel.class)
     @JoinColumn(name = "page_id", nullable = false, insertable = false, updatable = false)
-    private Page pageId;
-    @ManyToOne(targetEntity = Lemma.class)
+    private PageModel pageModelId;
+    @ManyToOne(targetEntity = LemmaModel.class)
     @JoinColumn(name = "lemma_id", nullable = false, insertable = false, updatable = false)
-    private Lemma lemmaId;
+    private LemmaModel lemmaModelId;
     @Column(name = "ranks")
     private float rank;
 }

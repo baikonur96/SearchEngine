@@ -1,17 +1,25 @@
 package searchengine.services;
 
-
-import java.util.List;
-import java.util.Vector;
-import java.util.concurrent.RecursiveTask;
+import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Vector;
+import java.util.concurrent.RecursiveTask;
 
-public class StartIndexingService  {
+@RequiredArgsConstructor
+@Service
+public class SiteParse extends RecursiveTask<StringBuffer> {
+
+    private static final Logger logger = LogManager.getLogger(SiteParse.class);
+
 
     public static StringBuffer resultBuff = new StringBuffer(); //ApiController.START_URL
     public static List<String> linkSet = new Vector<>();
@@ -19,7 +27,7 @@ public class StartIndexingService  {
     String url;
     int level;
 
-    public StartIndexingService(String url, int level) {
+    public SiteParse(String url, int level) {
         this.url = url;
         this.level = level;
     }
@@ -66,7 +74,7 @@ public class StartIndexingService  {
 
     @Override
     protected StringBuffer compute() {
-        List<StartIndexingService> listTask = new ArrayList<>();
+        List<IndexingServiceImpl> listTask = new ArrayList<>();
         try {
             for (String link : ParseLink(url)) {
                 int index = resultBuff.indexOf(url);
@@ -75,7 +83,7 @@ public class StartIndexingService  {
                 } else {
                     resultBuff.append(url + "\n");
                 }
-                StartIndexingService s1 = new StartIndexingService(link, level + 1);
+                IndexingServiceImpl s1 = new IndexingServiceImpl(link, level + 1);
                 listTask.add(s1);
             }
             invokeAll(listTask);
@@ -85,4 +93,3 @@ public class StartIndexingService  {
         return resultBuff;
     }
 }
-

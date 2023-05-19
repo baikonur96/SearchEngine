@@ -2,17 +2,15 @@ package searchengine.model;
 
 import lombok.Getter;
 import lombok.Setter;
-import searchengine.model.StatusOption;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "Sites")
-public class Site {
+public class SiteModel {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(nullable = false)
