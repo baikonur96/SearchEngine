@@ -2,6 +2,7 @@ package searchengine.services;
 
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import searchengine.config.Site;
 import searchengine.config.SitesList;
 import searchengine.dto.indexing.IndexingResponse;
+import searchengine.model.SiteModel;
 import searchengine.model.StatusOption;
 import searchengine.repositories.SiteModelRepository;
 
@@ -37,25 +39,25 @@ public class IndexingServiceImpl implements IndexingService {
             response.setError("Индексация уже запущена");
         } else {
 
-            ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(4);
-            executor.setMaximumPoolSize(Runtime.getRuntime().availableProcessors());
-            sitesList.forEach(e -> {
-                SiteParser sp = siteParser.copy();
-                String name = e.getName();
-                Optional<List<SiteT>> byName = siteTRepository.findByName(name);
-                if (byName.isPresent()) {
-                    siteTRepository.deleteAllByName(name);
-                }
-                SiteT siteT = new SiteT(Status.INDEXING, Utils.getTimeStamp(), e.getUrl(), e.getName());
-                siteTRepository.save(siteT);
-                siteTList.add(siteT);
-                sp.init(siteT, 3);
-                executor.execute(sp);
-
-            });
+                response.setError("TRUE");
+//            ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(4);
+//            executor.setMaximumPoolSize(Runtime.getRuntime().availableProcessors());
+//            siteList.forEach(e -> {
+//                SiteParse sp = siteParse.copy();
+//                String name = e.getName();
+//                Optional<List<SiteModel>> byName = siteModelRepository.findByName(name);
+//                if (byName.isPresent()) {
+//                    siteModelRepository.deleteAllByName(name);
+//                }
+//                SiteModel siteModel = new SiteModel(StatusOption.INDEXING, Utils.getTimeStamp(), e.getUrl(), e.getName());
+//                siteModelRepository.save(siteModel);
+//                siteTList.add(siteT);
+//                sp.init(siteT, 3);
+//                executor.execute(sp);
+//
+//            });
             response.setResult(true);
         }
-
         return response;
     }
 

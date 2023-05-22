@@ -74,22 +74,25 @@ public class SiteParse extends RecursiveTask<StringBuffer> {
 
     @Override
     protected StringBuffer compute() {
-        List<IndexingServiceImpl> listTask = new ArrayList<>();
-        try {
-            for (String link : ParseLink(url)) {
-                int index = resultBuff.indexOf(url);
-                if (index >= 0) {
-                    resultBuff.insert(index + url.length(), "\n" + "\t".repeat(level + 1) + link);
-                } else {
-                    resultBuff.append(url + "\n");
-                }
-                IndexingServiceImpl s1 = new IndexingServiceImpl(link, level + 1);
-                listTask.add(s1);
-            }
-            invokeAll(listTask);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        List<IndexingServiceImpl> listTask = new ArrayList<>();
+//        try {
+//            for (String link : ParseLink(url)) {
+//                int index = resultBuff.indexOf(url);
+//                if (index >= 0) {
+//                    resultBuff.insert(index + url.length(), "\n" + "\t".repeat(level + 1) + link);
+//                } else {
+//                    resultBuff.append(url + "\n");
+//                }
+//                IndexingServiceImpl s1 = new IndexingServiceImpl(link, level + 1);
+//                listTask.add(s1);
+//            }
+//            invokeAll(listTask);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//
+//    }
+//}
         return resultBuff;
     }
 }
