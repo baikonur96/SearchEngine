@@ -1,10 +1,12 @@
 package searchengine.services;
 
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
+
+import java.util.concurrent.ForkJoinPool;
+
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,7 @@ import searchengine.dto.indexing.IndexingResponse;
 import searchengine.model.SiteModel;
 import searchengine.model.StatusOption;
 import searchengine.repositories.SiteModelRepository;
+import searchengine.repositories.Utils;
 
 @Service
 @RequiredArgsConstructor
@@ -23,8 +26,9 @@ public class IndexingServiceImpl implements IndexingService {
 
     @Autowired
     private final SiteModelRepository siteModelRepository;
-
+    private final List<SiteModel> siteModelsList = new ArrayList<>();
     private final SitesList sites;
+    private final SiteParse siteParse;
 
 
     @Override
@@ -38,24 +42,25 @@ public class IndexingServiceImpl implements IndexingService {
             response.setResult(false);
             response.setError("Индексация уже запущена");
         } else {
+                siteList.forEach(e -> {
+                ForkJoinPool pool = new ForkJoinPool();
+                    System.out.println("Сайт - " + e.getUrl());
+                pool.invoke(new SiteParse(e.getUrl(), 0));
+                // SiteParse sp = siteParse.copy();
+                String name = e.getName();
+                Optional<List<SiteModel>> byName = siteModelRepository.findByName(name);
+                if (byName.isPresent()) {
+                    siteModelRepository.deleteAllByName(name);
+                }
+                SiteModel siteModel = new SiteModel();
+                siteModel.setStatus(StatusOption.INDEXED);
+                siteModel.setStatusTime(Utils.getTimeStamp().toLocalDateTime());
+                siteModel.setUrl(e.getUrl());
+                siteModel.setName(e.getName());
+                siteModelRepository.save(siteModel);
+                siteModelsList.add(siteModel);
 
-                response.setError("TRUE");
-//            ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(4);
-//            executor.setMaximumPoolSize(Runtime.getRuntime().availableProcessors());
-//            siteList.forEach(e -> {
-//                SiteParse sp = siteParse.copy();
-//                String name = e.getName();
-//                Optional<List<SiteModel>> byName = siteModelRepository.findByName(name);
-//                if (byName.isPresent()) {
-//                    siteModelRepository.deleteAllByName(name);
-//                }
-//                SiteModel siteModel = new SiteModel(StatusOption.INDEXING, Utils.getTimeStamp(), e.getUrl(), e.getName());
-//                siteModelRepository.save(siteModel);
-//                siteTList.add(siteT);
-//                sp.init(siteT, 3);
-//                executor.execute(sp);
-//
-//            });
+            });
             response.setResult(true);
         }
         return response;
@@ -63,7 +68,30 @@ public class IndexingServiceImpl implements IndexingService {
 
     @Override
     public IndexingResponse getStopIndexing() {
-        return null;
+        IndexingResponse response = new IndexingResponse();
+//        try {
+//            long size = siteTList.stream().filter(e -> e.getStatus() == StatusOption.INDEXING).count();
+//            if (size == 0) {
+//                response.setResult(false);
+//                response.setError("Индексация не запущена");
+//            } else {
+//                //SiteParse.forceStop();
+//                siteTList.stream()
+//                        .filter(e -> e.getStatus() == StatusOption.INDEXING)
+//                        .forEach(e -> {
+//                            e.setStatus(StatusOption.FAILED);
+//                            e.setStatusTime(Utils.getTimeStamp().toLocalDateTime());
+//                            e.setLastError("Индексация остановлена пользователем");
+//                        });
+//                siteModelRepository.saveAll(siteTList);
+//
+//                response.setResult(true);
+//            }
+//        } catch (Exception e) {
+//            response.setResult(false);
+//            response.setError(e.getMessage());
+//        }
+        return response;
     }
 
     @Override

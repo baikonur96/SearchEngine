@@ -1,29 +1,28 @@
 package searchengine.services;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
-
+import org.jsoup.nodes.Document;
+import searchengine.config.Site;
+import searchengine.config.SitesList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RecursiveTask;
 
 @RequiredArgsConstructor
 @Service
-public class SiteParse extends RecursiveTask<StringBuffer> {
+public class SiteParse extends RecursiveAction {
 
-    private static final Logger logger = LogManager.getLogger(SiteParse.class);
+/*    SitesList sites;
+    List<Site> siteList = sites.getSites();*/
 
-
-    public static StringBuffer resultBuff = new StringBuffer(); //ApiController.START_URL
-    public static List<String> linkSet = new Vector<>();
-
+    public StringBuffer resultBuff = new StringBuffer("https://www.lenta.ru");
+    public List<String> linkSet = new Vector<>();
     String url;
     int level;
 
@@ -43,7 +42,7 @@ public class SiteParse extends RecursiveTask<StringBuffer> {
     public boolean CorrectUrl(String startLink, String link) {
         if (!link.isEmpty() && link.startsWith(startLink) &&
                 link.length() > startLink.length() &&
-              //  !link.equals(Main.START_URL) &&
+                !link.contains("https://www.lenta.ru") &&
                 !link.contains("#") &&
                 !link.contains(" ") &&
                 !link.substring(20, link.length()).contains(".")
@@ -57,7 +56,7 @@ public class SiteParse extends RecursiveTask<StringBuffer> {
         List<String> outputList = new ArrayList<>();
         try {
             Thread.sleep(150);
-            Document document = Jsoup.connect(link).get();
+            Document document = (Document) Jsoup.connect(link).get();
             Elements elements = document.select("a");
             for (Element ele : elements) {
                 String linkString = new String(ele.attr("abs:href"));
@@ -73,26 +72,24 @@ public class SiteParse extends RecursiveTask<StringBuffer> {
     }
 
     @Override
-    protected StringBuffer compute() {
-//        List<IndexingServiceImpl> listTask = new ArrayList<>();
-//        try {
-//            for (String link : ParseLink(url)) {
-//                int index = resultBuff.indexOf(url);
-//                if (index >= 0) {
-//                    resultBuff.insert(index + url.length(), "\n" + "\t".repeat(level + 1) + link);
-//                } else {
-//                    resultBuff.append(url + "\n");
-//                }
-//                IndexingServiceImpl s1 = new IndexingServiceImpl(link, level + 1);
-//                listTask.add(s1);
-//            }
-//            invokeAll(listTask);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//    }
-//}
-        return resultBuff;
+    protected void compute() {
+        List<SiteParse> listTask = new ArrayList<>();
+        try {
+            for (String link : ParseLink(url)) {
+                int index = resultBuff.indexOf(url);
+                if (index >= 0) {
+                    resultBuff.insert(index + url.length(), "\n" + "\t".repeat(level + 1) + link);
+
+                } else {
+                    resultBuff.append(url + "\n");
+                }
+                SiteParse s1 = new SiteParse(link, level + 1);
+                listTask.add(s1);
+            }
+            invokeAll(listTask);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
+
 }
