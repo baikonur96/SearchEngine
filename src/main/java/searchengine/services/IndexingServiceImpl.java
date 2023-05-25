@@ -10,6 +10,7 @@ import java.util.concurrent.ForkJoinPool;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import searchengine.config.Site;
@@ -22,6 +23,7 @@ import searchengine.repositories.Utils;
 
 @Service
 @RequiredArgsConstructor
+
 public class IndexingServiceImpl implements IndexingService {
 
     @Autowired
@@ -42,24 +44,29 @@ public class IndexingServiceImpl implements IndexingService {
             response.setResult(false);
             response.setError("Индексация уже запущена");
         } else {
+
                 siteList.forEach(e -> {
-                ForkJoinPool pool = new ForkJoinPool();
-                    System.out.println("Сайт - " + e.getUrl());
-                pool.invoke(new SiteParse(e.getUrl(), 0));
+
+
                 // SiteParse sp = siteParse.copy();
                 String name = e.getName();
                 Optional<List<SiteModel>> byName = siteModelRepository.findByName(name);
                 if (byName.isPresent()) {
                     siteModelRepository.deleteAllByName(name);
                 }
+                ForkJoinPool pool = new ForkJoinPool();
+                StringBuffer res = new StringBuffer();
+                res.append(pool.invoke(new SiteParse(e.getUrl(), 0)));
+               // pool.invoke(new SiteParse(e.getUrl(), 0));
+                    System.out.println("Сайт - " + e.getUrl());
                 SiteModel siteModel = new SiteModel();
                 siteModel.setStatus(StatusOption.INDEXED);
-                siteModel.setStatusTime(Utils.getTimeStamp().toLocalDateTime());
+                siteModel.setStatusTime(Utils.getTimeStamp());
                 siteModel.setUrl(e.getUrl());
                 siteModel.setName(e.getName());
+                siteModel.setLastError("lol");
                 siteModelRepository.save(siteModel);
                 siteModelsList.add(siteModel);
-
             });
             response.setResult(true);
         }

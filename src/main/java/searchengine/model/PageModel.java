@@ -17,7 +17,7 @@ public class PageModel {
     @ManyToOne(targetEntity = SiteModel.class)
     @JoinColumn(name = "site_id", nullable = false, insertable = false, updatable = false)
     private SiteModel siteModelId;
-    @Column(columnDefinition = "TEXT NOT NULL, Index (path(128))", name = "path")
+    @Column(columnDefinition = "TEXT NOT NULL, Index (path(128))")
     private String path;
     @Column(nullable = false)
     private int code;
