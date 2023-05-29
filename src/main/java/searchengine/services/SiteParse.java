@@ -23,8 +23,8 @@ public class SiteParse extends RecursiveTask<StringBuffer> {
 /*    SitesList sites;
     List<Site> siteList = sites.getSites();*/
 
-    public StringBuffer resultBuff = new StringBuffer();
-    public List<String> linkSet = new Vector<>();
+    public static StringBuffer resultBuff = new StringBuffer("https://skillbox.ru/");
+    public static List<String> linkSet = new Vector<>();
     String url;
     int level;
 
@@ -42,31 +42,35 @@ public class SiteParse extends RecursiveTask<StringBuffer> {
     }
 
     public boolean CorrectUrl(String startLink, String link) {
-        if (!link.isEmpty() && link.startsWith(startLink) &&
+        if (!link.isEmpty() &&
+                link.startsWith(startLink) &&
                 link.length() > startLink.length() &&
-            //    !link.contains("https://www.lenta.ru") &&
+                !link.equals("https://skillbox.ru/") &&
                 !link.contains("#") &&
-                !link.contains(" ") &&
-                !link.substring(20, link.length()).contains(".")
+                !link.contains(" ") // &&
+              //  !link.substring(20, link.length()).contains(".")
         ) {
             return true;
         }
         return false;
     }
-
     public List<String> ParseLink(String link) {
+        System.out.println("ParseLink: " + link);
         List<String> outputList = new ArrayList<>();
         try {
             Thread.sleep(150);
-            Document document = (Document) Jsoup.connect(link)
+            Document document = Jsoup.connect(link)
                     .userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) YandexIndexingMachine")
                     .referrer("http://www.google.com")
                     .ignoreContentType(true)
                     .get();
             Elements elements = document.select("a");
             for (Element ele : elements) {
+               // System.out.println("ParseLink + element: " + ele);
                 String linkString = new String(ele.attr("abs:href"));
+               // System.out.println(linkString);
                 if (CorrectUrl(link, linkString) && !linkString.equals(link) && !linkSet.contains(linkString)) {
+                    System.out.println("!!!!!!!!!! - " + linkString);
                     linkSet.add(linkString);
                     outputList.add(linkString);
                 }

@@ -24,7 +24,7 @@ public class SiteModel {
     @Basic
     @Column(name = "status_time", columnDefinition = "DATETIME")
     private Timestamp statusTime;
-    @Column(name = "last_error", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "last_error", columnDefinition = "TEXT")
     private String lastError;
     @Column(name = "url", nullable = false, columnDefinition = "VARCHAR(255)")
     private String url;

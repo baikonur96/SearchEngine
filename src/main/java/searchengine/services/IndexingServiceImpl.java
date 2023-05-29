@@ -1,6 +1,7 @@
 package searchengine.services;
 
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -45,29 +46,45 @@ public class IndexingServiceImpl implements IndexingService {
             response.setError("Индексация уже запущена");
         } else {
 
-                siteList.forEach(e -> {
+            for (Site site : siteList){
 
-
-                // SiteParse sp = siteParse.copy();
-                String name = e.getName();
-                Optional<List<SiteModel>> byName = siteModelRepository.findByName(name);
-                if (byName.isPresent()) {
-                    siteModelRepository.deleteAllByName(name);
-                }
                 ForkJoinPool pool = new ForkJoinPool();
                 StringBuffer res = new StringBuffer();
-                res.append(pool.invoke(new SiteParse(e.getUrl(), 0)));
-               // pool.invoke(new SiteParse(e.getUrl(), 0));
-                    System.out.println("Сайт - " + e.getUrl());
+                res.append(pool.invoke(new SiteParse(site.getUrl(), 0)));
+
+                System.out.println("Сайт - " + site.getUrl());
                 SiteModel siteModel = new SiteModel();
                 siteModel.setStatus(StatusOption.INDEXED);
                 siteModel.setStatusTime(Utils.getTimeStamp());
-                siteModel.setUrl(e.getUrl());
-                siteModel.setName(e.getName());
-                siteModel.setLastError("lol");
+                siteModel.setUrl(site.getUrl());
+                siteModel.setName(site.getName());
                 siteModelRepository.save(siteModel);
                 siteModelsList.add(siteModel);
-            });
+                WriteFile(res);
+            }
+//            siteList.forEach(e -> {
+//
+//
+//                // SiteParse sp = siteParse.copy();
+//                String name = e.getName();
+//                Optional<List<SiteModel>> byName = siteModelRepository.findByName(name);
+//                if (byName.isPresent()) {
+//                    siteModelRepository.deleteAllByName(name);
+//                }
+//                ForkJoinPool pool = new ForkJoinPool();
+//                StringBuffer res = new StringBuffer();
+//                res.append(pool.invoke(new SiteParse(e.getUrl(), 0)));
+//                WriteFile(res);
+//                // pool.invoke(new SiteParse(e.getUrl(), 0));
+//                System.out.println("Сайт - " + e.getUrl());
+//                SiteModel siteModel = new SiteModel();
+//                siteModel.setStatus(StatusOption.INDEXED);
+//                siteModel.setStatusTime(Utils.getTimeStamp());
+//                siteModel.setUrl(e.getUrl());
+//                siteModel.setName(e.getName());
+//                siteModelRepository.save(siteModel);
+//                siteModelsList.add(siteModel);
+//            });
             response.setResult(true);
         }
         return response;
@@ -105,5 +122,22 @@ public class IndexingServiceImpl implements IndexingService {
     public IndexingResponse indexPage(String url) {
         return null;
     }
+
+
+    public static void WriteFile(StringBuffer buff) {
+        String path = "C:/Users/Adminsvu/Documents/FinalProject_1/SearchEngine/src/main/java/searchengine/outFiles/res.txt";
+        try {
+            PrintWriter writer = new PrintWriter(path);
+            writer.write(buff.toString());
+            writer.flush();
+            writer.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
 }
 
