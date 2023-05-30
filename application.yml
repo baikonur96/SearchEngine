@@ -9,12 +9,12 @@ spring.jpa.hibernate.globally_quoted_identifiers: true
 
 indexing-settings:
   sites:
-    - url: https://www.lenta.ru
-      name: Лента.ру
+#    - url: https://www.lenta.ru
+#      name: Лента.ру
+#    - url: https://www.playback.ru
+#      name: PlayBack.Ru
     - url: https://www.skillbox.ru
       name: Skillbox
-    - url: https://www.playback.ru
-      name: PlayBack.Ru
 
 parse-settings:
   useragent: Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) YandexIndexingMach

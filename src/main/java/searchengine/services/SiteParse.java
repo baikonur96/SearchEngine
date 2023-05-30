@@ -18,10 +18,8 @@ import java.util.concurrent.RecursiveTask;
 @RequiredArgsConstructor
 @Service
 
-public class SiteParse extends RecursiveTask<StringBuffer> {
+public class SiteParse extends RecursiveAction {
 
-/*    SitesList sites;
-    List<Site> siteList = sites.getSites();*/
 
     public static StringBuffer resultBuff = new StringBuffer("https://skillbox.ru/");
     public static List<String> linkSet = new Vector<>();
@@ -45,10 +43,9 @@ public class SiteParse extends RecursiveTask<StringBuffer> {
         if (!link.isEmpty() &&
                 link.startsWith(startLink) &&
                 link.length() > startLink.length() &&
-                !link.equals("https://skillbox.ru/") &&
                 !link.contains("#") &&
-                !link.contains(" ") // &&
-              //  !link.substring(20, link.length()).contains(".")
+                !link.contains(" ") &&
+                !link.substring(startLink.length()).contains(".")
         ) {
             return true;
         }
@@ -65,14 +62,17 @@ public class SiteParse extends RecursiveTask<StringBuffer> {
                     .ignoreContentType(true)
                     .get();
             Elements elements = document.select("a");
+
             for (Element ele : elements) {
+               // System.out.println(ele);
                // System.out.println("ParseLink + element: " + ele);
                 String linkString = new String(ele.attr("abs:href"));
-               // System.out.println(linkString);
+                System.out.println(linkString);
                 if (CorrectUrl(link, linkString) && !linkString.equals(link) && !linkSet.contains(linkString)) {
-                    System.out.println("!!!!!!!!!! - " + linkString);
+                    System.out.println("!!!!OK!!!!!! - " + linkString);
                     linkSet.add(linkString);
                     outputList.add(linkString);
+                    System.out.println("Размер листа: " + outputList.size());
                 }
             }
         } catch (Exception e) {
@@ -82,18 +82,18 @@ public class SiteParse extends RecursiveTask<StringBuffer> {
     }
 
     @Override
-    protected StringBuffer compute() {
+    protected void compute() {
         List<SiteParse> listTask = new ArrayList<>();
         try {
             for (String link : ParseLink(url)) {
-                System.out.println(link);
-                int index = resultBuff.indexOf(url);
-                if (index >= 0) {
-                    resultBuff.insert(index + url.length(), "\n" + "\t".repeat(level + 1) + link);
+                System.out.println("Найден и выведен итогово - " + link);
+              //  int index = resultBuff.indexOf(url);
+              //  if (index >= 0) {
+                  //  resultBuff.insert(index + url.length(), "\n" + "\t".repeat(level + 1) + link);
 
-                } else {
-                    resultBuff.append(url + "\n");
-                }
+           //     } else {
+              //      resultBuff.append(url + "\n");
+           //     }
                 SiteParse s1 = new SiteParse(link, level + 1);
                 System.out.println(s1);
                 listTask.add(s1);
@@ -102,7 +102,6 @@ public class SiteParse extends RecursiveTask<StringBuffer> {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return resultBuff;
     }
 
 }

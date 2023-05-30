@@ -37,31 +37,29 @@ public class IndexingServiceImpl implements IndexingService {
     @Override
     @Transactional
     public IndexingResponse getStartIndexing() {
-        IndexingResponse response = new IndexingResponse();
-        List<Site> siteList = sites.getSites();
-        if (siteList.stream()
-                .map(e -> siteModelRepository.countByNameAndStatus(e.getName(), StatusOption.INDEXING))
-                .reduce(0, Integer::sum) > 0) {
-            response.setResult(false);
-            response.setError("Индексация уже запущена");
-        } else {
-
-            for (Site site : siteList){
-
+        IndexingResponse response = null;
+        try {
+            response = new IndexingResponse();
+            List<Site> siteList = sites.getSites();
+            if (siteList.stream()
+                    .map(e -> siteModelRepository.countByNameAndStatus(e.getName(), StatusOption.INDEXING))
+                    .reduce(0, Integer::sum) > 0) {
+                response.setResult(false);
+                response.setError("Индексация уже запущена");
+            } else {
                 ForkJoinPool pool = new ForkJoinPool();
-                StringBuffer res = new StringBuffer();
-                res.append(pool.invoke(new SiteParse(site.getUrl(), 0)));
-
-                System.out.println("Сайт - " + site.getUrl());
-                SiteModel siteModel = new SiteModel();
-                siteModel.setStatus(StatusOption.INDEXED);
-                siteModel.setStatusTime(Utils.getTimeStamp());
-                siteModel.setUrl(site.getUrl());
-                siteModel.setName(site.getName());
-                siteModelRepository.save(siteModel);
-                siteModelsList.add(siteModel);
-                WriteFile(res);
-            }
+                for (Site site : siteList) {
+                    System.out.println("Сайт IndexServiceImpl - " + site.getUrl());
+                    pool.invoke(new SiteParse(site.getUrl(), 0));
+                    // pool.wait();
+                    SiteModel siteModel = new SiteModel();
+                    siteModel.setStatus(StatusOption.INDEXED);
+                    siteModel.setStatusTime(Utils.getTimeStamp());
+                    siteModel.setUrl(site.getUrl());
+                    siteModel.setName(site.getName());
+                    siteModelRepository.save(siteModel);
+                    siteModelsList.add(siteModel);
+                }
 //            siteList.forEach(e -> {
 //
 //
@@ -85,7 +83,12 @@ public class IndexingServiceImpl implements IndexingService {
 //                siteModelRepository.save(siteModel);
 //                siteModelsList.add(siteModel);
 //            });
-            response.setResult(true);
+                response.setResult(true);
+            }
+            System.out.println("Final start Index");
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return response;
     }
