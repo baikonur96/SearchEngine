@@ -8,7 +8,7 @@ import searchengine.model.SiteModel;
 
 import java.util.List;
 
-@Repository
+//@Repository
 public interface PageModelRepository extends JpaRepository<PageModel, Integer>
 {
 //    List<PageModel> findBySiteTBySiteIdAndCode(SiteModel site, int code);

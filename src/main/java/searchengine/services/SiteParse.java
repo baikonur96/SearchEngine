@@ -4,23 +4,29 @@ import lombok.RequiredArgsConstructor;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.jsoup.nodes.Document;
 import searchengine.config.Site;
 import searchengine.config.SitesList;
+import searchengine.model.PageModel;
+import searchengine.repositories.PageModelRepository;
+import searchengine.repositories.SiteModelRepository;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RecursiveTask;
 
-@RequiredArgsConstructor
-@Service
 
+@Service
+@RequiredArgsConstructor
 public class SiteParse extends RecursiveAction {
 
-
+    @Autowired
+    private PageModelRepository pageModelRepository;
     public static StringBuffer resultBuff = new StringBuffer("https://skillbox.ru/");
     public static List<String> linkSet = new Vector<>();
     String url;
@@ -67,6 +73,7 @@ public class SiteParse extends RecursiveAction {
                // System.out.println(ele);
                // System.out.println("ParseLink + element: " + ele);
                 String linkString = new String(ele.attr("abs:href"));
+
                 System.out.println(linkString);
                 if (CorrectUrl(link, linkString) && !linkString.equals(link) && !linkSet.contains(linkString)) {
                     System.out.println("!!!!OK!!!!!! - " + linkString);
@@ -96,6 +103,8 @@ public class SiteParse extends RecursiveAction {
            //     }
                 SiteParse s1 = new SiteParse(link, level + 1);
                 System.out.println(s1);
+//                PageModel pageModel = new PageModel();
+//                    pageModel.setCode();
                 listTask.add(s1);
             }
             invokeAll(listTask);

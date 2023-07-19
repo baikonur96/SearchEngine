@@ -45,6 +45,12 @@ public class ApiController {
             return ResponseEntity.ok(indexingService.getStartIndexing());
     }
 
+    @GetMapping("/stopIndexing")
+    public ResponseEntity<IndexingResponse> StopIndex() {
+
+        return ResponseEntity.ok(indexingService.getStopIndexing());
+    }
+
     @PostMapping("/indexPage")
     public ResponseEntity<Boolean> AddUpdateIndex(@RequestParam String url) {
         Boolean response = true;
