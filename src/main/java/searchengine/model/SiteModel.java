@@ -6,12 +6,13 @@ import javax.persistence.*;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
-@AllArgsConstructor
-@NoArgsConstructor
+
 @Getter
 @Setter
 @Entity
 @Table(name = "Sites")
+@AllArgsConstructor
+@RequiredArgsConstructor
 public class SiteModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
