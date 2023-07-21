@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ThreadPoolExecutor;
 
 
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ import searchengine.config.SitesList;
 import searchengine.dto.indexing.IndexingResponse;
 import searchengine.model.SiteModel;
 import searchengine.model.StatusOption;
+import searchengine.repositories.PageModelRepository;
 import searchengine.repositories.SiteModelRepository;
 import searchengine.repositories.Utils;
 
@@ -34,10 +37,12 @@ public class IndexingServiceImpl implements IndexingService {
     private final SiteParse siteParse;
 
 
+
+
     @Override
     @Transactional
     public IndexingResponse getStartIndexing() {
-        IndexingResponse response = null;
+        IndexingResponse response = new IndexingResponse();
         try {
             response = new IndexingResponse();
             List<Site> siteList = sites.getSites();
@@ -47,10 +52,21 @@ public class IndexingServiceImpl implements IndexingService {
                 response.setResult(false);
                 response.setError("Индексация уже запущена");
             } else {
-                ForkJoinPool pool = new ForkJoinPool();
+                ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(4);
+                executor.setMaximumPoolSize(Runtime.getRuntime().availableProcessors());
+
+
+              //  ForkJoinPool pool = new ForkJoinPool();
                 for (Site site : siteList) {
-                    System.out.println("Сайт IndexServiceImpl - " + site.getUrl());
-                    pool.invoke(new SiteParse(site.getUrl(), 0));
+                    SiteParse siteP = siteParse.copy();
+                    String name = site.getName();
+                    Optional<List<SiteModel>> byName = siteModelRepository.findByName(name);
+                    if (byName.isPresent()) {
+                        siteModelRepository.deleteAllByName(name);
+                    }
+                  //  System.out.println("-------------------- " + pool.getPoolSize() + " ----------------");
+                //    System.out.println("Сайт IndexServiceImpl - " + site.getUrl());
+                 //   pool.invoke(new SiteParse(site.getUrl(), 0));
                     // pool.wait();
                     SiteModel siteModel = new SiteModel();
                     siteModel.setStatus(StatusOption.INDEXED);
@@ -59,6 +75,8 @@ public class IndexingServiceImpl implements IndexingService {
                     siteModel.setName(site.getName());
                     siteModelRepository.save(siteModel);
                     siteModelsList.add(siteModel);
+                    siteP.init(siteModel, 0);
+                    executor.execute(siteParse);
                 }
 //            siteList.forEach(e -> {
 //

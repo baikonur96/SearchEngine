@@ -11,11 +11,11 @@ import java.util.List;
 //@Repository
 public interface PageModelRepository extends JpaRepository<PageModel, Integer>
 {
-//    List<PageModel> findBySiteTBySiteIdAndCode(SiteModel site, int code);
-//
-//    int countBySiteTBySiteId(SiteModel siteModel);
-//
-//    PageModel findByPageId(int pageId);
-//
-//    PageModel findBySiteTBySiteIdAndPath(SiteModel siteModel, String path);
+    List<PageModel> findBySiteTBySiteIdAndCode(SiteModel site, int code);
+
+    int countBySiteTBySiteId(SiteModel siteModel);
+
+    PageModel findByPageId(int pageId);
+
+    PageModel findBySiteTBySiteIdAndPath(SiteModel siteModel, String path);
 }
