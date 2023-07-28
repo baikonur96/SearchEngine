@@ -7,7 +7,6 @@ import javax.persistence.*;
 @Getter
 @Setter
 @Entity
-
 @Table(name = "Lemmas")
 public class LemmaModel {
     @Id

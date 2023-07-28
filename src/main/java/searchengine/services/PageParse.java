@@ -6,6 +6,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import searchengine.model.PageModel;
+import searchengine.model.SiteModel;
 
 import java.io.IOException;
 import java.lang.invoke.WrongMethodTypeException;
@@ -15,17 +16,126 @@ import java.util.Vector;
 import java.util.concurrent.RecursiveTask;
 
 public class PageParse extends RecursiveTask<List<String>> {
+  //  public static StringBuffer resultBuff = new StringBuffer(Main.START_URL);
+    public static List<String> linkSet = new Vector<>();
+    String url;
+    int level;
 
-    public static StringBuffer resultBuff = new StringBuffer("https://skillbox.ru/");
-    //private final SiteModel siteModel;
+    public PageParse(String url, int level, SiteModel parent) {
+        this.url = url;
+        this.level = level;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public boolean CorrectUrl(String startLink, String link) {
+        if (!link.isEmpty() && link.startsWith(startLink) &&
+                link.length() > startLink.length() &&
+                !link.equals(parent.) &&
+                !link.contains("#") &&
+                !link.contains(" ") &&
+                !link.substring(20, link.length()).contains(".")
+        ) {
+            return true;
+        }
+        return false;
+    }
+
+    public List<String> ParseLink(String link) {
+        List<String> outputList = new ArrayList<>();
+        try {
+            Thread.sleep(150);
+            Document document = Jsoup.connect(link).get();
+            Elements elements = document.select("a");
+            for (Element ele : elements) {
+                String linkString = new String(ele.attr("abs:href"));
+                if (CorrectUrl(link, linkString) && !linkString.equals(link) && !linkSet.contains(linkString)) {
+                    linkSet.add(linkString);
+                    outputList.add(linkString);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return outputList;
+    }
+
+    @Override
+    protected StringBuffer compute() {
+        List<PageParse> listTask = new ArrayList<>();
+        try {
+            for (String link : ParseLink(url)) {
+                System.out.println(link);
+                int index = resultBuff.indexOf(url);
+                if (index >= 0) {
+                    resultBuff.insert(index + url.length(), "\n" + "\t".repeat(level + 1) + link);
+                } else {
+                    resultBuff.append(url + "\n");
+                }
+                PageParse pp = new PageParse(link, level + 1, );
+                listTask.add(pp);
+            }
+            invokeAll(listTask);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return resultBuff;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*    private final String url;
+    private final String domain;
+    private PageParse parent;
+    private int level;
+    private final SiteT siteT;
+    private final PageTRepository pageTRepository;
+    private final SiteTRepository siteTRepository;
+   // private final ConcurrentMap<String, PageParse> uniqueLinks;
     public static List<String> linkSet = new Vector<>();
     private Connection.Response response = null;
 
+
     public PageParse(String url, PageParse parent) {
-        this(url, parent.domain, parent.siteT, parent.pageTRepository, parent.siteTRepository, parent.uniqueLinks);
+        this(url, parent.domain, parent.siteT, parent.pageModelRepository, parent.siteModelRepository, parent.uniqueLinks);
         this.parent = parent;
         this.level = parent.level + 1;
     }
+
 
     public boolean CorrectUrl(String startLink, String link) {
         if (!link.isEmpty() &&
@@ -56,25 +166,15 @@ public class PageParse extends RecursiveTask<List<String>> {
             }
             if (response.statusCode() != 200) throw new IOException(String.valueOf(response.statusCode()));
             document = response.parse();
-            // savePage(document.body().text(), document.title());
-
-
-
-
 
             Elements elements = document.select("a");
 
             for (Element ele : elements) {
-                // System.out.println(ele);
-                // System.out.println("ParseLink + element: " + ele);
                 String linkString = new String(ele.attr("abs:href"));
-
                 System.out.println(linkString);
                 if (CorrectUrl(link, linkString) && !linkString.equals(link) && !linkSet.contains(linkString)) {
-                    //  System.out.println("!!!!OK!!!!!! - " + linkString);
                     linkSet.add(linkString);
                     outputList.add(linkString);
-                    //   System.out.println("Размер листа: " + outputList.size());
                 }
             }
         } catch (Exception e) {
@@ -82,21 +182,6 @@ public class PageParse extends RecursiveTask<List<String>> {
         }
         return outputList;
     }
-
-/*    public PageModel savePage(String text, String title) {
-
-        int code;
-        if (response == null || (text.equals(""))) {
-            code = 408;
-        } else {
-            code = response.statusCode();
-        }
-        PageModel p = new PageModel(siteModel.getSiteId(), url, code, text, title);
-        pageModelRepository.save(p);
-        siteModel.setStatusTime(Utils.getTimeStamp());
-        siteModelRepository.save(siteModel);
-        return p;
-    }*/
 
     @Override
     protected void compute() {
@@ -119,7 +204,7 @@ public class PageParse extends RecursiveTask<List<String>> {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
+    }*/
 
 
 
@@ -129,4 +214,4 @@ public class PageParse extends RecursiveTask<List<String>> {
 
 
 
-}
+

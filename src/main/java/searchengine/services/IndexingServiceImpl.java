@@ -32,7 +32,7 @@ public class IndexingServiceImpl implements IndexingService {
 
     @Autowired
     private final SiteModelRepository siteModelRepository;
-    private final List<SiteModel> siteModelsList = new ArrayList<>();
+    private final List<SiteModel> siteModelsList = new ArrayList<>();  // Просто лист с моделями сайта
     private final SitesList sites;
     private final SiteParse siteParse;
 
@@ -55,8 +55,6 @@ public class IndexingServiceImpl implements IndexingService {
                 ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(4);
                 executor.setMaximumPoolSize(Runtime.getRuntime().availableProcessors());
 
-
-              //  ForkJoinPool pool = new ForkJoinPool();
                 for (Site site : siteList) {
                     SiteParse siteP = siteParse.copy();
                     String name = site.getName();
@@ -64,10 +62,6 @@ public class IndexingServiceImpl implements IndexingService {
                     if (byName.isPresent()) {
                         siteModelRepository.deleteAllByName(name);
                     }
-                  //  System.out.println("-------------------- " + pool.getPoolSize() + " ----------------");
-                //    System.out.println("Сайт IndexServiceImpl - " + site.getUrl());
-                 //   pool.invoke(new SiteParse(site.getUrl(), 0));
-                    // pool.wait();
                     SiteModel siteModel = new SiteModel();
                     siteModel.setStatus(StatusOption.INDEXED);
                     siteModel.setStatusTime(Utils.getTimeStamp());
@@ -75,32 +69,10 @@ public class IndexingServiceImpl implements IndexingService {
                     siteModel.setName(site.getName());
                     siteModelRepository.save(siteModel);
                     siteModelsList.add(siteModel);
-                    siteP.init(siteModel, 0);
+                    siteP.init(siteModel, 3);
                     executor.execute(siteParse);
                 }
-//            siteList.forEach(e -> {
-//
-//
-//                // SiteParse sp = siteParse.copy();
-//                String name = e.getName();
-//                Optional<List<SiteModel>> byName = siteModelRepository.findByName(name);
-//                if (byName.isPresent()) {
-//                    siteModelRepository.deleteAllByName(name);
-//                }
-//                ForkJoinPool pool = new ForkJoinPool();
-//                StringBuffer res = new StringBuffer();
-//                res.append(pool.invoke(new SiteParse(e.getUrl(), 0)));
-//                WriteFile(res);
-//                // pool.invoke(new SiteParse(e.getUrl(), 0));
-//                System.out.println("Сайт - " + e.getUrl());
-//                SiteModel siteModel = new SiteModel();
-//                siteModel.setStatus(StatusOption.INDEXED);
-//                siteModel.setStatusTime(Utils.getTimeStamp());
-//                siteModel.setUrl(e.getUrl());
-//                siteModel.setName(e.getName());
-//                siteModelRepository.save(siteModel);
-//                siteModelsList.add(siteModel);
-//            });
+
                 response.setResult(true);
             }
             System.out.println("Final start Index");
