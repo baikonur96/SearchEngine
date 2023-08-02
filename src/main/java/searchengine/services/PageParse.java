@@ -1,5 +1,7 @@
 package searchengine.services;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -13,31 +15,29 @@ import java.lang.invoke.WrongMethodTypeException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RecursiveTask;
 
-public class PageParse extends RecursiveTask<List<String>> {
+@Getter
+@Setter
+public class PageParse extends RecursiveAction {
   //  public static StringBuffer resultBuff = new StringBuffer(Main.START_URL);
+  private Connection.Response response = null;
     public static List<String> linkSet = new Vector<>();
-    String url;
-    int level;
+    Integer siteId;
+    String siteUrl;
+    String page;
 
-    public PageParse(String url, int level, SiteModel parent) {
-        this.url = url;
-        this.level = level;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
+    public PageParse(Integer siteId, String siteUrl, String page) {
+        this.siteId = siteId;
+        this.siteUrl = siteUrl;
+        this.page = page;
     }
 
     public boolean CorrectUrl(String startLink, String link) {
         if (!link.isEmpty() && link.startsWith(startLink) &&
                 link.length() > startLink.length() &&
-                !link.equals(parent.) &&
+                !link.equals(this.siteUrl) &&
                 !link.contains("#") &&
                 !link.contains(" ") &&
                 !link.substring(20, link.length()).contains(".")
@@ -48,13 +48,28 @@ public class PageParse extends RecursiveTask<List<String>> {
     }
 
     public List<String> ParseLink(String link) {
+     //   System.out.println("ParseLink: " + link);
         List<String> outputList = new ArrayList<>();
         try {
             Thread.sleep(150);
-            Document document = Jsoup.connect(link).get();
+            Document document = null;
+            response = Jsoup.connect(link)
+                    .userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) YandexIndexingMachine")
+                    .referrer("http://www.google.com")
+                    .timeout(5000)
+                    .ignoreContentType(true)
+                    .execute();
+            if (!response.contentType().startsWith("text/html;")) {
+                throw new WrongMethodTypeException("wrong format");
+            }
+            if (response.statusCode() != 200) throw new IOException(String.valueOf(response.statusCode()));
+            document = response.parse();
+
             Elements elements = document.select("a");
+
             for (Element ele : elements) {
                 String linkString = new String(ele.attr("abs:href"));
+                //System.out.println(linkString);
                 if (CorrectUrl(link, linkString) && !linkString.equals(link) && !linkSet.contains(linkString)) {
                     linkSet.add(linkString);
                     outputList.add(linkString);
@@ -67,25 +82,18 @@ public class PageParse extends RecursiveTask<List<String>> {
     }
 
     @Override
-    protected StringBuffer compute() {
+    protected void compute() {
         List<PageParse> listTask = new ArrayList<>();
         try {
-            for (String link : ParseLink(url)) {
-                System.out.println(link);
-                int index = resultBuff.indexOf(url);
-                if (index >= 0) {
-                    resultBuff.insert(index + url.length(), "\n" + "\t".repeat(level + 1) + link);
-                } else {
-                    resultBuff.append(url + "\n");
-                }
-                PageParse pp = new PageParse(link, level + 1, );
-                listTask.add(pp);
+            for (String link : ParseLink(page)) {
+                System.out.println("PageParse: " + link );
+                PageParse pageParse = new PageParse(siteId, siteUrl, link);
+                listTask.add(pageParse);
             }
             invokeAll(listTask);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return resultBuff;
     }
 }
 
