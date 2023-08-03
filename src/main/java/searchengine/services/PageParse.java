@@ -1,14 +1,18 @@
 package searchengine.services;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.stereotype.Service;
 import searchengine.model.PageModel;
 import searchengine.model.SiteModel;
+import searchengine.repositories.PageModelRepository;
+import searchengine.repositories.SiteModelRepository;
 
 import java.io.IOException;
 import java.lang.invoke.WrongMethodTypeException;
@@ -18,29 +22,43 @@ import java.util.Vector;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RecursiveTask;
 
+
+@Service
 @Getter
 @Setter
 public class PageParse extends RecursiveAction {
-  //  public static StringBuffer resultBuff = new StringBuffer(Main.START_URL);
-  private Connection.Response response = null;
-    public static List<String> linkSet = new Vector<>();
+    private final PageModelRepository pageModelRepository;
+    private final SiteModelRepository siteModelRepository;
+
     Integer siteId;
     String siteUrl;
     String page;
 
-    public PageParse(Integer siteId, String siteUrl, String page) {
+    public PageParse(PageModelRepository pageModelRepository, SiteModelRepository siteModelRepository, Integer siteId, String siteUrl, String page) {
+        this.pageModelRepository = pageModelRepository;
+        this.siteModelRepository = siteModelRepository;
         this.siteId = siteId;
         this.siteUrl = siteUrl;
         this.page = page;
     }
 
+    private Connection.Response response;
+    public static List<String> linkSet = new Vector<>();
+
+
+    public void addPage(){
+
+    }
+
+
+
     public boolean CorrectUrl(String startLink, String link) {
         if (!link.isEmpty() && link.startsWith(startLink) &&
                 link.length() > startLink.length() &&
-                !link.equals(this.siteUrl) &&
+                !link.equals(startLink) &&
                 !link.contains("#") &&
-                !link.contains(" ") &&
-                !link.substring(20, link.length()).contains(".")
+                !link.contains(" ")// &&
+               // !link.substring(20, link.length()).contains(".")
         ) {
             return true;
         }
@@ -48,7 +66,6 @@ public class PageParse extends RecursiveAction {
     }
 
     public List<String> ParseLink(String link) {
-     //   System.out.println("ParseLink: " + link);
         List<String> outputList = new ArrayList<>();
         try {
             Thread.sleep(150);
@@ -63,7 +80,15 @@ public class PageParse extends RecursiveAction {
                 throw new WrongMethodTypeException("wrong format");
             }
             if (response.statusCode() != 200) throw new IOException(String.valueOf(response.statusCode()));
+
             document = response.parse();
+
+            PageModel pageModel = new PageModel();
+            pageModel.setCode(response.statusCode());
+            pageModel.setSiteModelId(siteModelRepository.findByUrl(siteUrl));
+            pageModel.setPath(page);
+            pageModel.setContent(String.valueOf(document));
+            pageModelRepository.save(pageModel);
 
             Elements elements = document.select("a");
 
@@ -83,14 +108,15 @@ public class PageParse extends RecursiveAction {
 
     @Override
     protected void compute() {
-        List<PageParse> listTask = new ArrayList<>();
+        // List<PageParse> listTask = new Vector<>();
         try {
             for (String link : ParseLink(page)) {
                 System.out.println("PageParse: " + link );
-                PageParse pageParse = new PageParse(siteId, siteUrl, link);
-                listTask.add(pageParse);
+                PageParse pageParse = new PageParse(pageModelRepository, siteModelRepository, siteId, siteUrl, link);
+                //listTask.add(pageParse);
+                invokeAll(pageParse);
             }
-            invokeAll(listTask);
+           // invokeAll(listTask);
         } catch (Exception e) {
             e.printStackTrace();
         }

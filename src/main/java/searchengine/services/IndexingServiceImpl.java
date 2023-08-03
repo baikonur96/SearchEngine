@@ -29,12 +29,17 @@ import searchengine.repositories.Utils;
 @Service
 @RequiredArgsConstructor
 public class IndexingServiceImpl implements IndexingService {
-
+    private final PageModelRepository pageModelRepository;
     private final SiteModelRepository siteModelRepository;
     private final List<SiteModel> siteModelsList = new Vector<>();
     private final SitesList sites;
 
-
+    public String UpdateUrl(String url){
+        if (url.contains("www.")){
+            return new String(url.substring(0, 8) + url.substring(12));
+        }
+        return url;
+    }
 
 
     @Override
@@ -61,13 +66,17 @@ public class IndexingServiceImpl implements IndexingService {
                     SiteModel siteModel = new SiteModel();
                     siteModel.setStatus(StatusOption.INDEXED);
                     siteModel.setStatusTime(Utils.getTimeStamp());
-                    siteModel.setUrl(site.getUrl());
+                    siteModel.setUrl(UpdateUrl(site.getUrl()));
                     siteModel.setName(site.getName());
                     siteModelRepository.save(siteModel);
                     siteModelsList.add(siteModel);
                   //  siteP.init(siteModel, 0);
                     System.out.println("Отдал в поток " + siteModel.getName());
-                    executor.submit(new SiteParse(siteModel.getId(), siteModel.getUrl()));
+                    SiteParse siteParse = new SiteParse(pageModelRepository, siteModelRepository);
+                    siteParse.setSiteId(siteModel.getId());
+                    siteParse.setSiteUrl(siteModel.getUrl());
+                  //  siteParse.init(siteModelRepository, pageModelRepository);
+                    executor.submit(siteParse);
                 }
 //            siteList.forEach(e -> {
 //

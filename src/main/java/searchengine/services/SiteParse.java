@@ -30,21 +30,31 @@ import java.util.concurrent.*;
 @Setter
 @RequiredArgsConstructor
 public class SiteParse implements Runnable {
+    private final PageModelRepository pageModelRepository;
+    private final SiteModelRepository siteModelRepository;
+
     private Connection.Response response;
     Integer siteId;
     String siteUrl;
 
-    public SiteParse(Integer siteId, String siteUrl) {
-        this.siteId = siteId;
-        this.siteUrl = siteUrl;
-    }
+//    public SiteParse(Integer siteId, String siteUrl) {
+//        this.siteId = siteId;
+//        this.siteUrl = siteUrl;
+//    }
+
+//    public void init(SiteModelRepository siteModelRepository, PageModelRepository pageModelRepository){
+//        this.pageModelRepository = pageModelRepository;
+//        this.siteModelRepository = siteModelRepository;
+//    }
+
 
     public boolean CorrectUrl(String startLink, String link) {
+   //     System.out.println("Starlink - " + startLink + "    link - " + link);
         if (!link.isEmpty() && link.startsWith(startLink) &&
                 link.length() > startLink.length() &&
                 !link.equals(startLink) &&
                 !link.contains("#") &&
-                !link.contains(" ") //&&
+                !link.contains(" ")// &&
                 //!link.substring(startLink.length(), link.length()).contains(".")
         ) {
             return true;
@@ -72,6 +82,7 @@ public class SiteParse implements Runnable {
             Elements elements = document.select("a");
             for (Element element : elements) {
                 String linkString = new String(element.attr("abs:href"));
+              //  System.out.println(linkString);
                 if (CorrectUrl(link, linkString)) {
                     outputList.add(linkString);
                 }
@@ -84,11 +95,11 @@ public class SiteParse implements Runnable {
 
     @Override
     public void run() {
-      //  ForkJoinPool pool = new ForkJoinPool();
+        System.out.println("----------------RUN---------------");
+        ForkJoinPool pool = new ForkJoinPool();
         List<String> pages = ParseLink(siteUrl.trim());
         for (String page : pages) {
-            System.out.println("SiteParse: " + page);
-           // pool.invoke(new PageParse(siteId, siteUrl, page));
+            pool.invoke(new PageParse(pageModelRepository, siteModelRepository, siteId, siteUrl, page));
         }
 
     }
