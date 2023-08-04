@@ -23,9 +23,9 @@ import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RecursiveTask;
 
 
-@Service
 @Getter
 @Setter
+@RequiredArgsConstructor
 public class PageParse extends RecursiveAction {
     private final PageModelRepository pageModelRepository;
     private final SiteModelRepository siteModelRepository;
@@ -33,14 +33,14 @@ public class PageParse extends RecursiveAction {
     Integer siteId;
     String siteUrl;
     String page;
-
-    public PageParse(PageModelRepository pageModelRepository, SiteModelRepository siteModelRepository, Integer siteId, String siteUrl, String page) {
-        this.pageModelRepository = pageModelRepository;
-        this.siteModelRepository = siteModelRepository;
-        this.siteId = siteId;
-        this.siteUrl = siteUrl;
-        this.page = page;
-    }
+//
+//    public PageParse(PageModelRepository pageModelRepository, SiteModelRepository siteModelRepository, Integer siteId, String siteUrl, String page) {
+//        this.pageModelRepository = pageModelRepository;
+//        this.siteModelRepository = siteModelRepository;
+//        this.siteId = siteId;
+//        this.siteUrl = siteUrl;
+//        this.page = page;
+//    }
 
     private Connection.Response response;
     public static List<String> linkSet = new Vector<>();
@@ -85,8 +85,11 @@ public class PageParse extends RecursiveAction {
 
             PageModel pageModel = new PageModel();
             pageModel.setCode(response.statusCode());
+            System.out.println("+++++++++ " + siteUrl + " ++++++++++++++" );
+            System.out.println("------------- " + siteModelRepository.findByUrl(siteUrl).getId() + " Вернул из базы по url");
+            System.out.println("link: " + link);
             pageModel.setSiteModelId(siteModelRepository.findByUrl(siteUrl));
-            pageModel.setPath(page);
+            pageModel.setPath(link);
             pageModel.setContent(String.valueOf(document));
             pageModelRepository.save(pageModel);
 
@@ -108,15 +111,18 @@ public class PageParse extends RecursiveAction {
 
     @Override
     protected void compute() {
-        // List<PageParse> listTask = new Vector<>();
+    //    System.out.println(page);
+         List<PageParse> listTask = new Vector<>();
         try {
             for (String link : ParseLink(page)) {
                 System.out.println("PageParse: " + link );
-                PageParse pageParse = new PageParse(pageModelRepository, siteModelRepository, siteId, siteUrl, link);
-                //listTask.add(pageParse);
-                invokeAll(pageParse);
+                PageParse pageParse = new PageParse(pageModelRepository, siteModelRepository);
+                pageParse.setSiteId(siteId);
+                pageParse.setSiteUrl(siteUrl);
+                pageParse.setPage(link);
+                listTask.add(pageParse);
             }
-           // invokeAll(listTask);
+            invokeAll(listTask);
         } catch (Exception e) {
             e.printStackTrace();
         }

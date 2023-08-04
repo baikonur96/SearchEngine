@@ -5,7 +5,7 @@ spring.datasource.password: jcnhjdtw22
 spring.jpa.hibernate.dialect: org.hibernate.dialect.MySQL8Dialect
 spring.jpa.hibernate.ddl-auto: create
 
-spring.jpa.hibernate.globally_quoted_identifiers: update
+spring.jpa.hibernate.globally_quoted_identifiers: create
 
 indexing-settings:
   sites:

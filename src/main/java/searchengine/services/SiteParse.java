@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.*;
 
+import static java.util.concurrent.ForkJoinTask.invokeAll;
+
 
 @Service
 @Getter
@@ -95,13 +97,17 @@ public class SiteParse implements Runnable {
 
     @Override
     public void run() {
+        List<PageParse> listTask = new ArrayList<>();
         System.out.println("----------------RUN---------------");
         ForkJoinPool pool = new ForkJoinPool();
         List<String> pages = ParseLink(siteUrl.trim());
         for (String page : pages) {
-            pool.invoke(new PageParse(pageModelRepository, siteModelRepository, siteId, siteUrl, page));
+            PageParse pageParse = new PageParse(pageModelRepository, siteModelRepository);
+            pageParse.setSiteId(siteId);
+            pageParse.setSiteUrl(siteUrl);
+            pageParse.setPage(page);
+            pool.invoke(pageParse);
         }
-
     }
 }
 
