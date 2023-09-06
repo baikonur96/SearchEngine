@@ -73,13 +73,14 @@ public class SiteParse implements Runnable {
                     .userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) YandexIndexingMachine")
                     .referrer("http://www.google.com")
                     .timeout(5000)
-                    .ignoreContentType(true)
+                    .ignoreContentType(false)
                     .execute();
-            if (!response.contentType().startsWith("text/html;")) {
-                throw new WrongMethodTypeException("wrong format");
-            }
+//            if (!response.contentType().startsWith("text/html;")) {
+//                throw new WrongMethodTypeException("wrong format");
+//            }
             if (response.statusCode() != 200) throw new IOException(String.valueOf(response.statusCode()));
             document = response.parse();
+
 
             Elements elements = document.select("a");
             for (Element element : elements) {
@@ -100,8 +101,9 @@ public class SiteParse implements Runnable {
         List<PageParse> listTask = new ArrayList<>();
         System.out.println("----------------RUN---------------");
         ForkJoinPool pool = new ForkJoinPool();
-        List<String> pages = ParseLink(siteUrl.trim());
+        List<String> pages = ParseLink(siteUrl);
         for (String page : pages) {
+           // System.out.println( siteUrl + " - " + page);
             PageParse pageParse = new PageParse(pageModelRepository, siteModelRepository);
             pageParse.setSiteId(siteId);
             pageParse.setSiteUrl(siteUrl);

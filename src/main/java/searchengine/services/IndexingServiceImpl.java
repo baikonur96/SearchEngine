@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import searchengine.config.Site;
 import searchengine.config.SitesList;
 import searchengine.dto.indexing.IndexingResponse;
+import searchengine.model.PageModel;
 import searchengine.model.SiteModel;
 import searchengine.model.StatusOption;
 import searchengine.repositories.PageModelRepository;
@@ -33,6 +34,7 @@ public class IndexingServiceImpl implements IndexingService {
     private final SiteModelRepository siteModelRepository;
     private final List<SiteModel> siteModelsList = new Vector<>();
     private final SitesList sites;
+
 
     public String UpdateUrl(String url){
         if (url.contains("www.")){
@@ -64,12 +66,20 @@ public class IndexingServiceImpl implements IndexingService {
                         siteModelRepository.deleteAllByName(name);
                     }
                     SiteModel siteModel = new SiteModel();
-                    siteModel.setStatus(StatusOption.INDEXED);
+                    siteModel.setStatus(StatusOption.INDEXING);
                     siteModel.setStatusTime(Utils.getTimeStamp());
                     siteModel.setUrl(UpdateUrl(site.getUrl()));
+                 //   System.out.println(site.getUrl() + " ---------- " + UpdateUrl(site.getUrl()));
                     siteModel.setName(site.getName());
                     siteModelRepository.save(siteModel);
                     siteModelsList.add(siteModel);
+//                    Thread.sleep(5000);
+//                    PageModel pageModel = new PageModel();
+//                    pageModel.setSiteModelId(siteModel);
+//                    pageModel.setPath("https://skillbox.ru/lol/");
+//                    pageModel.setCode(200);
+//                    pageModel.setContent("Content");
+//                    pageModelRepository.save(pageModel);
                   //  siteP.init(siteModel, 0);
                     System.out.println("Отдал в поток " + siteModel.getName());
                     SiteParse siteParse = new SiteParse(pageModelRepository, siteModelRepository);

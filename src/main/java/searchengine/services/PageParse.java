@@ -1,5 +1,6 @@
 package searchengine.services;
 
+import com.sun.xml.bind.v2.runtime.output.SAXOutput;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -13,6 +14,7 @@ import searchengine.model.PageModel;
 import searchengine.model.SiteModel;
 import searchengine.repositories.PageModelRepository;
 import searchengine.repositories.SiteModelRepository;
+import searchengine.repositories.Utils;
 
 import java.io.IOException;
 import java.lang.invoke.WrongMethodTypeException;
@@ -73,31 +75,38 @@ public class PageParse extends RecursiveAction {
             response = Jsoup.connect(link)
                     .userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) YandexIndexingMachine")
                     .referrer("http://www.google.com")
-                    .timeout(5000)
+                    .timeout(120000)
                     .ignoreContentType(true)
+                    .ignoreHttpErrors(true)
                     .execute();
-            if (!response.contentType().startsWith("text/html;")) {
-                throw new WrongMethodTypeException("wrong format");
+//            if (!response.contentType().startsWith("text/html;")) {
+//                throw new WrongMethodTypeException("wrong format");
+//            }
+            SiteModel siteModel = siteModelRepository.findByUrl(siteUrl);
+            System.out.println(link + " - " + response.statusCode());
+            if (response.statusCode() != 200){
+                siteModel.setLastError(response.statusMessage());
+                siteModel.setStatusTime(Utils.getTimeStamp());
+                siteModelRepository.save(siteModel);
+              //  throw new IOException(String.valueOf(response.statusCode()));
             }
-            if (response.statusCode() != 200) throw new IOException(String.valueOf(response.statusCode()));
 
             document = response.parse();
 
             PageModel pageModel = new PageModel();
             pageModel.setCode(response.statusCode());
-            System.out.println("+++++++++ " + siteUrl + " ++++++++++++++" );
-            System.out.println("------------- " + siteModelRepository.findByUrl(siteUrl).getId() + " Вернул из базы по url");
-            System.out.println("link: " + link);
-            pageModel.setSiteModelId(siteModelRepository.findByUrl(siteUrl));
+//            System.out.println("+++++++++ " + siteUrl + " ++++++++++++++" );
+//            System.out.println("------------- " + siteModelRepository.findByUrl(siteUrl).getId() + " Вернул из базы по url");
+//            System.out.println("link: " + link);
+            pageModel.setSiteModelId(siteModel);
             pageModel.setPath(link);
-            pageModel.setContent(String.valueOf(document));
+            pageModel.setContent(document.html());
             pageModelRepository.save(pageModel);
 
             Elements elements = document.select("a");
 
             for (Element ele : elements) {
                 String linkString = new String(ele.attr("abs:href"));
-                //System.out.println(linkString);
                 if (CorrectUrl(link, linkString) && !linkString.equals(link) && !linkSet.contains(linkString)) {
                     linkSet.add(linkString);
                     outputList.add(linkString);

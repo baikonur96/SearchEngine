@@ -15,17 +15,16 @@ import javax.persistence.*;
 @Table(name = "Pages")
 public class PageModel {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @ManyToOne(targetEntity = SiteModel.class)
-    @JoinColumn(name = "site_id", nullable = false, insertable = false, updatable = false)
+    @JoinColumn(name = "site_id" /*,nullable = false, insertable = false, updatable = false*/)
     private SiteModel siteModelId;
     @Column(columnDefinition = "TEXT NOT NULL, Index (path(128))")
     private String path;
     @Column(nullable = false)
     private int code;
-    @Column(columnDefinition = "MEDIUMTEXT", nullable = false)
+    @Column(columnDefinition = "LONGTEXT", nullable = false)
     private String content;
 
 }
