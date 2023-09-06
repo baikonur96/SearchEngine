@@ -51,9 +51,10 @@ public class SiteParse implements Runnable {
 
 
     public boolean CorrectUrl(String startLink, String link) {
+      //  boolean a = (link.trim() + "/").length() > startLink.length();
    //     System.out.println("Starlink - " + startLink + "    link - " + link);
         if (!link.isEmpty() && link.startsWith(startLink) &&
-                link.length() > startLink.length() &&
+                link.trim().length() > (startLink + "/").length() &&
                 !link.equals(startLink) &&
                 !link.contains("#") &&
                 !link.contains(" ")// &&
@@ -98,17 +99,17 @@ public class SiteParse implements Runnable {
 
     @Override
     public void run() {
-        List<PageParse> listTask = new ArrayList<>();
-        System.out.println("----------------RUN---------------");
+       // List<PageParse> listTask = new ArrayList<>();
+       // System.out.println("----------------RUN---------------");
         ForkJoinPool pool = new ForkJoinPool();
         List<String> pages = ParseLink(siteUrl);
         for (String page : pages) {
-           // System.out.println( siteUrl + " - " + page);
             PageParse pageParse = new PageParse(pageModelRepository, siteModelRepository);
             pageParse.setSiteId(siteId);
             pageParse.setSiteUrl(siteUrl);
             pageParse.setPage(page);
             pool.invoke(pageParse);
+           // System.out.println("СПИСОК: " + siteUrl + " - " + page);
         }
     }
 }

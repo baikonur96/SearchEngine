@@ -56,7 +56,7 @@ public class PageParse extends RecursiveAction {
 
     public boolean CorrectUrl(String startLink, String link) {
         if (!link.isEmpty() && link.startsWith(startLink) &&
-                link.length() > startLink.length() &&
+                (link.length() + 1)  > startLink.length() &&
                 !link.equals(startLink) &&
                 !link.contains("#") &&
                 !link.contains(" ")// &&
@@ -86,18 +86,15 @@ public class PageParse extends RecursiveAction {
             System.out.println(link + " - " + response.statusCode());
             if (response.statusCode() != 200){
                 siteModel.setLastError(response.statusMessage());
-                siteModel.setStatusTime(Utils.getTimeStamp());
-                siteModelRepository.save(siteModel);
               //  throw new IOException(String.valueOf(response.statusCode()));
             }
+            siteModel.setStatusTime(Utils.getTimeStamp());
+            siteModelRepository.save(siteModel);
 
             document = response.parse();
 
             PageModel pageModel = new PageModel();
             pageModel.setCode(response.statusCode());
-//            System.out.println("+++++++++ " + siteUrl + " ++++++++++++++" );
-//            System.out.println("------------- " + siteModelRepository.findByUrl(siteUrl).getId() + " Вернул из базы по url");
-//            System.out.println("link: " + link);
             pageModel.setSiteModelId(siteModel);
             pageModel.setPath(link);
             pageModel.setContent(document.html());
