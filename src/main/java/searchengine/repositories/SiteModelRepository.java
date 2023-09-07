@@ -16,20 +16,20 @@ import java.util.Optional;
 @Repository
 public interface SiteModelRepository extends JpaRepository<SiteModel, Integer>
 {
-
+    @Transactional
     Optional<List<SiteModel>> findByName(String name);
     //Optional<List<SiteModel>> findByUrl(String url);
 
-
+    @Transactional
     boolean existsByUrl(String url);
 
-    // @Transactional
+     @Transactional
     void deleteAllByName(String name);
-
+    @Transactional
     void deleteAllByUrl(String url);
-
+    @Transactional
     int countByNameAndStatus(String name, StatusOption status);
-
+    @Transactional
     SiteModel findByUrl(String url);
 
     //@Query(value = "select s from SiteModel s join PageModel p on s.id = p.id where p.id =?1")
