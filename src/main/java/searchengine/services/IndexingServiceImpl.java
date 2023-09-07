@@ -32,7 +32,7 @@ import searchengine.repositories.Utils;
 public class IndexingServiceImpl implements IndexingService {
     private final PageModelRepository pageModelRepository;
     private final SiteModelRepository siteModelRepository;
-    private final List<SiteModel> siteModelsList = new Vector<>();
+    private final List<SiteModel> siteModelList = new Vector<>();
     private final SitesList sites;
 
 
@@ -51,6 +51,7 @@ public class IndexingServiceImpl implements IndexingService {
     @Override
     @Transactional
     public IndexingResponse getStartIndexing() {
+        siteModelList.clear();
         IndexingResponse response = new IndexingResponse();
         try {
             response = new IndexingResponse();
@@ -59,7 +60,7 @@ public class IndexingServiceImpl implements IndexingService {
                     .map(e -> siteModelRepository.countByNameAndStatus(e.getName(), StatusOption.INDEXING))
                     .reduce(0, Integer::sum) > 0) {
                 response.setResult(false);
-                response.setError("Индексация уже запущена");
+                response.setError("Индексация уже запущена getStartIndexing");
             } else {
                 ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(4);
                 executor.setMaximumPoolSize(Runtime.getRuntime().availableProcessors());
@@ -67,6 +68,8 @@ public class IndexingServiceImpl implements IndexingService {
                     String name = site.getName();
                     Optional<List<SiteModel>> byName = siteModelRepository.findByName(name);
                     if (byName.isPresent()) {
+                        SiteModel siteModel = siteModelRepository.findByUrl(UpdateUrl(site.getUrl().trim()));
+                        pageModelRepository.deleteAllBySiteModelId(siteModel);
                         siteModelRepository.deleteAllByName(name);
                     }
                     SiteModel siteModel = new SiteModel();
@@ -75,7 +78,7 @@ public class IndexingServiceImpl implements IndexingService {
                     siteModel.setUrl(UpdateUrl(site.getUrl()));
                     siteModel.setName(site.getName());
                     siteModelRepository.save(siteModel);
-                    siteModelsList.add(siteModel);
+                    siteModelList.add(siteModel);
                     System.out.println("Отдал в поток " + siteModel.getName());
                     SiteParse siteParse = new SiteParse(pageModelRepository, siteModelRepository);
                     siteParse.setSiteId(siteModel.getId());
@@ -117,51 +120,60 @@ public class IndexingServiceImpl implements IndexingService {
 
     @Override
     public IndexingResponse getStopIndexing() {
+
         IndexingResponse response = new IndexingResponse();
-//        try {
-//            long size = siteTList.stream().filter(e -> e.getStatus() == StatusOption.INDEXING).count();
-//            if (size == 0) {
-//                response.setResult(false);
-//                response.setError("Индексация не запущена");
-//            } else {
-//                //SiteParse.forceStop();
-//                siteTList.stream()
-//                        .filter(e -> e.getStatus() == StatusOption.INDEXING)
-//                        .forEach(e -> {
-//                            e.setStatus(StatusOption.FAILED);
-//                            e.setStatusTime(Utils.getTimeStamp().toLocalDateTime());
-//                            e.setLastError("Индексация остановлена пользователем");
-//                        });
-//                siteModelRepository.saveAll(siteTList);
-//
-//                response.setResult(true);
-//            }
-//        } catch (Exception e) {
-//            response.setResult(false);
-//            response.setError(e.getMessage());
-//        }
+        try {
+            long size = siteModelList.stream().filter(e -> e.getStatus() == StatusOption.INDEXING).count();
+            if (size == 0) {
+                response.setResult(false);
+                response.setError("Индексация не запущена");
+            } else {
+                System.out.println(siteModelList.size());
+                System.out.println(siteModelList.get(0).getStatus());
+                System.out.println(siteModelList.get(1).getStatus());
+                System.out.println(siteModelList.get(2).getStatus());
+                siteModelList.stream()
+                      //  .filter(e -> e.getStatus() == StatusOption.INDEXING)
+                        .forEach(e -> {
+                            e.setStatus(StatusOption.FAILED);
+                            e.setStatusTime(Utils.getTimeStamp());
+                            e.setLastError("Индексация остановлена пользователем");
+                        });
+                siteModelRepository.saveAll(siteModelList);
+                SiteParse.forceStop();
+                response.setResult(true);
+            }
+        } catch (Exception e) {
+            response.setResult(false);
+            response.setError(e.getMessage());
+        }
         return response;
     }
 
     @Override
     public IndexingResponse indexPage(String url) {
         IndexingResponse response = new IndexingResponse();
-        //SiteModel siteModel = siteModelRepository.findByUrl(url.trim());
+
         if (siteModelRepository.existsByUrl(url)) {
+            SiteModel siteModel = siteModelRepository.findByUrl(url.trim());
+            pageModelRepository.deleteAllBySiteModelId(siteModel);
             siteModelRepository.deleteAllByUrl(url.trim());
-            System.out.println("Удалён из бд");
         }
-//        SiteModel siteModel = new SiteModel();
-//        siteModel.setStatus(StatusOption.INDEXING);
-//        siteModel.setStatusTime(Utils.getTimeStamp());
-//        siteModel.setUrl(UpdateUrl(url.trim()));
-//        siteModel.setName(url.substring(12));
-//        siteModelRepository.save(siteModel);
-//        siteModelsList.add(siteModel);
-//        //System.out.println("Отдал в поток " + siteModel.getName());
-//        SiteParse siteParse = new SiteParse(pageModelRepository, siteModelRepository);
-//        siteParse.setSiteId(siteModel.getId());
-//        siteParse.setSiteUrl(siteModel.getUrl());
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(4);
+        executor.setMaximumPoolSize(Runtime.getRuntime().availableProcessors());
+
+        SiteModel siteModel = new SiteModel();
+        siteModel.setStatus(StatusOption.INDEXING);
+        siteModel.setStatusTime(Utils.getTimeStamp());
+        siteModel.setUrl(UpdateUrl(url.trim()));
+        siteModel.setName(url.substring(8));
+        siteModelRepository.save(siteModel);
+        siteModelList.add(siteModel);
+        //System.out.println("Отдал в поток " + siteModel.getName());
+        SiteParse siteParse = new SiteParse(pageModelRepository, siteModelRepository);
+        siteParse.setSiteId(siteModel.getId());
+        siteParse.setSiteUrl(siteModel.getUrl());
+        executor.submit(siteParse);
         //System.out.println("Запущена индексация");
 
 

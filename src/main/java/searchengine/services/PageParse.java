@@ -35,14 +35,6 @@ public class PageParse extends RecursiveAction {
     Integer siteId;
     String siteUrl;
     String page;
-//
-//    public PageParse(PageModelRepository pageModelRepository, SiteModelRepository siteModelRepository, Integer siteId, String siteUrl, String page) {
-//        this.pageModelRepository = pageModelRepository;
-//        this.siteModelRepository = siteModelRepository;
-//        this.siteId = siteId;
-//        this.siteUrl = siteUrl;
-//        this.page = page;
-//    }
 
     private Connection.Response response;
     public static List<String> linkSet = new Vector<>();

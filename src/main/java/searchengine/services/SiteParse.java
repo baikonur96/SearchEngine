@@ -32,6 +32,7 @@ import static java.util.concurrent.ForkJoinTask.invokeAll;
 @Setter
 @RequiredArgsConstructor
 public class SiteParse implements Runnable {
+    private static ConcurrentLinkedQueue<ForkJoinPool> poolList = new ConcurrentLinkedQueue<>();
     private final PageModelRepository pageModelRepository;
     private final SiteModelRepository siteModelRepository;
 
@@ -39,20 +40,7 @@ public class SiteParse implements Runnable {
     Integer siteId;
     String siteUrl;
 
-//    public SiteParse(Integer siteId, String siteUrl) {
-//        this.siteId = siteId;
-//        this.siteUrl = siteUrl;
-//    }
-
-//    public void init(SiteModelRepository siteModelRepository, PageModelRepository pageModelRepository){
-//        this.pageModelRepository = pageModelRepository;
-//        this.siteModelRepository = siteModelRepository;
-//    }
-
-
     public boolean CorrectUrl(String startLink, String link) {
-      //  boolean a = (link.trim() + "/").length() > startLink.length();
-   //     System.out.println("Starlink - " + startLink + "    link - " + link);
         if (!link.isEmpty() && link.startsWith(startLink) &&
                 link.trim().length() > (startLink + "/").length() &&
                 !link.equals(startLink) &&
@@ -99,9 +87,8 @@ public class SiteParse implements Runnable {
 
     @Override
     public void run() {
-       // List<PageParse> listTask = new ArrayList<>();
-       // System.out.println("----------------RUN---------------");
         ForkJoinPool pool = new ForkJoinPool();
+        poolList.add(pool);
         List<String> pages = ParseLink(siteUrl);
         for (String page : pages) {
             PageParse pageParse = new PageParse(pageModelRepository, siteModelRepository);
@@ -109,9 +96,16 @@ public class SiteParse implements Runnable {
             pageParse.setSiteUrl(siteUrl);
             pageParse.setPage(page);
             pool.invoke(pageParse);
-           // System.out.println("СПИСОК: " + siteUrl + " - " + page);
         }
     }
+
+    public static void forceStop() {
+        if (poolList != null && !poolList.isEmpty()) {
+            poolList.forEach(ForkJoinPool::shutdownNow);
+            poolList = new ConcurrentLinkedQueue<>();
+        }
+    }
+
 }
 
 
