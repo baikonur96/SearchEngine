@@ -9,6 +9,7 @@ import searchengine.services.IndexingService;
 import searchengine.services.SearchService;
 import searchengine.services.StatisticsService;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
@@ -52,12 +53,12 @@ public class ApiController {
     }
 
     @PostMapping("/indexPage")
-    public ResponseEntity<Boolean> AddUpdateIndex(@RequestParam String url) {
-        Boolean response = true;
-        String sessionId = RequestContextHolder.currentRequestAttributes().getSessionId();
-        System.out.println(url);
+    public ResponseEntity<IndexingResponse> AddUpdateIndex(@RequestParam String url) {
+//        Boolean response = true;
+//        String sessionId = RequestContextHolder.currentRequestAttributes().getSessionId();
+//        System.out.println(url);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(indexingService.indexPage(url));
     }
 
 }

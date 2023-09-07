@@ -1,6 +1,7 @@
 package searchengine.repositories;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Example;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -17,9 +18,15 @@ public interface SiteModelRepository extends JpaRepository<SiteModel, Integer>
 {
 
     Optional<List<SiteModel>> findByName(String name);
+    //Optional<List<SiteModel>> findByUrl(String url);
+
+
+    boolean existsByUrl(String url);
 
     // @Transactional
     void deleteAllByName(String name);
+
+    void deleteAllByUrl(String url);
 
     int countByNameAndStatus(String name, StatusOption status);
 

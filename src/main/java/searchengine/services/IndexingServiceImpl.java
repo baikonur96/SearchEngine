@@ -37,7 +37,11 @@ public class IndexingServiceImpl implements IndexingService {
 
 
     public String UpdateUrl(String url){
-        if (url.contains("www.")){
+//        if (url.endsWith("/")){
+//            return new String(url.substring(0, url.length() - 1));
+//        }
+        if (url.contains("www."))
+        {
             return new String(url.substring(0, 8) + url.substring(12));
         }
         return url;
@@ -69,26 +73,16 @@ public class IndexingServiceImpl implements IndexingService {
                     siteModel.setStatus(StatusOption.INDEXING);
                     siteModel.setStatusTime(Utils.getTimeStamp());
                     siteModel.setUrl(UpdateUrl(site.getUrl()));
-                 //   System.out.println(site.getUrl() + " ---------- " + UpdateUrl(site.getUrl()));
                     siteModel.setName(site.getName());
                     siteModelRepository.save(siteModel);
                     siteModelsList.add(siteModel);
-//                    Thread.sleep(5000);
-//                    PageModel pageModel = new PageModel();
-//                    pageModel.setSiteModelId(siteModel);
-//                    pageModel.setPath("https://skillbox.ru/lol/");
-//                    pageModel.setCode(200);
-//                    pageModel.setContent("Content");
-//                    pageModelRepository.save(pageModel);
-                  //  siteP.init(siteModel, 0);
                     System.out.println("Отдал в поток " + siteModel.getName());
                     SiteParse siteParse = new SiteParse(pageModelRepository, siteModelRepository);
                     siteParse.setSiteId(siteModel.getId());
                     siteParse.setSiteUrl(siteModel.getUrl());
-                  //  siteParse.init(siteModelRepository, pageModelRepository);
                     executor.submit(siteParse);
                 }
-//            siteList.forEach(e -> {
+
 //
 //
 //                // SiteParse sp = siteParse.copy();
@@ -151,7 +145,28 @@ public class IndexingServiceImpl implements IndexingService {
 
     @Override
     public IndexingResponse indexPage(String url) {
-        return null;
+        IndexingResponse response = new IndexingResponse();
+        //SiteModel siteModel = siteModelRepository.findByUrl(url.trim());
+        if (siteModelRepository.existsByUrl(url)) {
+            siteModelRepository.deleteAllByUrl(url.trim());
+            System.out.println("Удалён из бд");
+        }
+//        SiteModel siteModel = new SiteModel();
+//        siteModel.setStatus(StatusOption.INDEXING);
+//        siteModel.setStatusTime(Utils.getTimeStamp());
+//        siteModel.setUrl(UpdateUrl(url.trim()));
+//        siteModel.setName(url.substring(12));
+//        siteModelRepository.save(siteModel);
+//        siteModelsList.add(siteModel);
+//        //System.out.println("Отдал в поток " + siteModel.getName());
+//        SiteParse siteParse = new SiteParse(pageModelRepository, siteModelRepository);
+//        siteParse.setSiteId(siteModel.getId());
+//        siteParse.setSiteUrl(siteModel.getUrl());
+        //System.out.println("Запущена индексация");
+
+
+        response.setResult(true);
+        return response;
     }
 
 
