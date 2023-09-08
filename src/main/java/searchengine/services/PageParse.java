@@ -40,19 +40,18 @@ public class PageParse extends RecursiveAction {
     public static List<String> linkSet = new Vector<>();
 
 
-    public void addPage(){
+    public void addPage() {
 
     }
 
 
-
     public boolean CorrectUrl(String startLink, String link) {
         if (!link.isEmpty() && link.startsWith(startLink) &&
-                (link.length() + 1)  > startLink.length() &&
+                (link.length() + 1) > startLink.length() &&
                 !link.equals(startLink) &&
                 !link.contains("#") &&
                 !link.contains(" ")// &&
-               // !link.substring(20, link.length()).contains(".")
+            // !link.substring(20, link.length()).contains(".")
         ) {
             return true;
         }
@@ -76,9 +75,9 @@ public class PageParse extends RecursiveAction {
 //            }
             SiteModel siteModel = siteModelRepository.findByUrl(siteUrl);
             System.out.println(link + " - " + response.statusCode());
-            if (response.statusCode() != 200){
+            if (response.statusCode() != 200) {
                 siteModel.setLastError(response.statusMessage());
-              //  throw new IOException(String.valueOf(response.statusCode()));
+                //  throw new IOException(String.valueOf(response.statusCode()));
             }
             siteModel.setStatusTime(Utils.getTimeStamp());
             siteModelRepository.save(siteModel);
@@ -109,11 +108,11 @@ public class PageParse extends RecursiveAction {
 
     @Override
     protected void compute() {
-    //    System.out.println(page);
-         List<PageParse> listTask = new Vector<>();
+        //    System.out.println(page);
+        List<PageParse> listTask = new Vector<>();
         try {
             for (String link : ParseLink(page)) {
-                System.out.println("PageParse: " + link );
+                System.out.println("PageParse: " + link);
                 PageParse pageParse = new PageParse(pageModelRepository, siteModelRepository);
                 pageParse.setSiteId(siteId);
                 pageParse.setSiteUrl(siteUrl);
