@@ -42,10 +42,6 @@ public class Main {
         document = response.parse();
 
         System.out.println(document.body());
-
-
-
-
     }
 
     public static String UpdateUrl(String url){
