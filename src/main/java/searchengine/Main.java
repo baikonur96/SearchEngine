@@ -1,20 +1,31 @@
+/*
 package searchengine;
 
+import lombok.RequiredArgsConstructor;
 import org.apache.lucene.morphology.LuceneMorphology;
 import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
+import java.util.Vector;
 
+@Service
+@RequiredArgsConstructor
 public class Main {
+    private final LuceneMorphology luceneMorphology;
+   // private static final String WORD_TYPE_REGEX = "\\W\\w&&[^а-яА-Я\\s]";
+    private static final String[] particlesNames = new String[]{"МЕЖД", "ПРЕДЛ", "СОЮЗ"};
+
     public static void main(String[] args) throws IOException {
 //        LuceneMorphology luceneMorph =
 //                new RussianLuceneMorphology();
 //        List<String> wordBaseForms =
-//                luceneMorph.getNormalForms("или");
+//                luceneMorph.getNormalForms("and");
 //        wordBaseForms.forEach(System.out::println);
 
 //        LuceneMorphology luceneMorph =
@@ -27,9 +38,11 @@ public class Main {
 //
 //        String res = UpdateUrl(url);
 //        System.out.println(res);
+
+
+
         Connection.Response response;
         String link = "https://skillbox.ru";
-
 
         Document document = null;
         response = Jsoup.connect(link)
@@ -41,7 +54,8 @@ public class Main {
 
         document = response.parse();
 
-        System.out.println(document.body());
+        splitTextIntoWords(Jsoup.parse(document.html()).text());
+
     }
 
     public static String UpdateUrl(String url){
@@ -53,4 +67,35 @@ public class Main {
         }
         return url;
     }
+
+    public static List splitTextIntoWords(String text) {
+        List<String> result = new Vector<>();
+        String[] words = text.split("[[0-9],.;'\\s]+");
+        for (int i = 0; i < words.length; i++){
+            String word = (words[i].toLowerCase(Locale.ROOT)
+                    .replaceAll("([^а-яa-z\\s])", "")
+                    .trim());
+            if (!word.isEmpty()){
+                result.add(word);
+            }
+
+        }
+        for (String op : result){
+            System.out.println(op);
+        }
+        System.out.println(result);
+        return result;
+    }
+
+//    private boolean isCorrectWordForm(String word) {
+//        List<String> wordInfo = luceneMorphology.getMorphInfo(word);
+//        for (String morphInfo : wordInfo) {
+//            if (morphInfo.matches(WORD_TYPE_REGEX)) {
+//                return false;
+//            }
+//        }
+//        return true;
+//    }
+
 }
+*/

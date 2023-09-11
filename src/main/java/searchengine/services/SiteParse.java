@@ -95,6 +95,7 @@ public class SiteParse implements Runnable {
             pageParse.setSiteId(siteId);
             pageParse.setSiteUrl(siteUrl);
             pageParse.setPage(page);
+         //   LemmaFinder lemmaFinder = new LemmaFinder();
             pool.invoke(pageParse);
         }
     }
