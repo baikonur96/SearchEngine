@@ -1,4 +1,3 @@
-/*
 package searchengine.services;
 
 import lombok.extern.slf4j.Slf4j;
@@ -132,4 +131,3 @@ public class LemmaFinder extends RecursiveAction {
 
 
 }
-*/

@@ -1,3 +1,4 @@
+/*
 package searchengine.repositories;
 
 import org.apache.catalina.startup.ContextRuleSet;
@@ -23,3 +24,4 @@ public interface LemmaModelRepository extends JpaRepository<LemmaModel, Integer>
     int countBySiteModelBySiteId(SiteModel siteT);
 
 }
+*/
