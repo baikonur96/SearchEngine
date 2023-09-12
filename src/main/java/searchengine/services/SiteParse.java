@@ -35,10 +35,21 @@ public class SiteParse implements Runnable {
     private static ConcurrentLinkedQueue<ForkJoinPool> poolList = new ConcurrentLinkedQueue<>();
     private final PageModelRepository pageModelRepository;
     private final SiteModelRepository siteModelRepository;
+    private final LemmaModelRepository lemmaModelRepository;
+    private final IndexModelRepository indexModelRepository;
+    private final LemmaParse lemmaParse;
 
     private Connection.Response response;
     Integer siteId;
     String siteUrl;
+
+    public SiteParse copy() {
+        return new SiteParse(this.pageModelRepository,
+                this.siteModelRepository,
+                this.lemmaModelRepository,
+                this.indexModelRepository,
+                this.lemmaParse);
+    }
 
     public boolean CorrectUrl(String startLink, String link) {
         if (!link.isEmpty() && link.startsWith(startLink) &&
@@ -91,11 +102,15 @@ public class SiteParse implements Runnable {
         poolList.add(pool);
         List<String> pages = ParseLink(siteUrl);
         for (String page : pages) {
-            PageParse pageParse = new PageParse(pageModelRepository, siteModelRepository);
+            PageParse pageParse = new PageParse(pageModelRepository,
+                    siteModelRepository,
+                    lemmaModelRepository,
+                    indexModelRepository,
+                    lemmaParse);
             pageParse.setSiteId(siteId);
             pageParse.setSiteUrl(siteUrl);
             pageParse.setPage(page);
-            LemmaFinder lemmaFinder = new LemmaFinder();
+            //LemmaFinder lemmaFinder = new LemmaFinder();
             pool.invoke(pageParse);
         }
     }
@@ -108,114 +123,6 @@ public class SiteParse implements Runnable {
     }
 
 }
-
-
-//    public List<String> ParseLink(String link) {
-//        List<String> outputList = new ArrayList<>();
-//        try {
-//            Thread.sleep(150);
-//            Document document = Jsoup.connect(link).get();
-//            Elements elements = document.select("a");
-//            for (Element ele : elements) {
-//                String linkString = new String(ele.attr("abs:href"));
-//                if (CorrectUrl(link, linkString) && !linkString.equals(link) && !linkSet.contains(linkString)) {
-//                    linkSet.add(linkString);
-//                    outputList.add(linkString);
-//                }
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        return outputList;
-//    }
-
-
-
-
-
-/*    public void getLinks() {
-        pool = new ForkJoinPool(this.parallelism);
-        poolList.add(pool);
-        PageParse parsedMap = new PageParse("/", domain, siteModel, pageModelRepository, siteModelRepository, null);
-        StringBuilder sb = new StringBuilder();
-        sb.append("************** \n\t%s *******************\n");
-        sb.append("Main: Parallelism: %d\n");
-        sb.append("Main: Active Threads: %d\n");
-        sb.append("Main: Task Count: %d\n");
-        sb.append("Main: Steal Count: %d\n");
-        sb.append("******************************************\n");
-        pool.execute(parsedMap);
-        do {
-                    , pool.getParallelism()
-                    , pool.getActiveThreadCount()
-                    , pool.getQueuedTaskCount()
-                    , pool.getStealCount()));
-            try {
-                TimeUnit.SECONDS.sleep(5);
-            } catch (InterruptedException e) {
-            }
-        } while (!parsedMap.isDone());
-        //Shut down ForkJoinPool using the shutdown() method.
-        pool.shutdown();
-        List<String> results;
-        try {
-            results = parsedMap.join();
-        //    logger.log(Level.INFO, () -> String.format("%s: %d links found.", url, results.size()));
-            parseAllPages();
-         //   logger.info("Lemmization complete.");
-        } catch (CancellationException e) {
-         //   logger.info("All tasks canceled");
-        }
-    }
-
-    public void parseAllPages() {
-        List<PageModel> pageTList = pageModelRepository.findBySiteTBySiteIdAndCode(siteModel, 200);
-        pageTList.forEach(this::parseSinglePage);
-
-    }
-
-    public void parseSinglePage(PageModel pageModel) {
-        LemmaParser newLemmaParser = lemmaParser.copy();
-        newLemmaParser.setSiteModel(siteModel);
-        newLemmaParser.parsePage(pageModel);
-    }*/
-
-
-
-/*    public static void forceStop() {
-        if (poolList != null && !poolList.isEmpty()) {
-            poolList.forEach(ForkJoinPool::shutdownNow);
-            poolList = new ConcurrentLinkedQueue<>();
-        }
-    }*/
-
-
-/*    public void deletePage(PageT pageT, SiteT siteT) {
-        List<IndexT> indexTList = indexTRepository.findByPageTByPageId(pageT);
-        indexTList.forEach(e ->
-                lemmaTRepository
-                        .findAllByLemmaId(e.getLemmaId())
-                        .forEach(lemmaT -> lemmaT.setFrequency(lemmaT.getFrequency() - 1))
-        );
-        lemmaTRepository.deleteBySiteTBySiteIdAndFrequency(siteT, 0);
-        pageTRepository.delete(pageT);
-    }
-
-    public void reloadPage(String uri) {
-        PageT pageT = pageTRepository.findBySiteTBySiteIdAndPath(siteT, uri);
-        if (pageT != null) {
-            deletePage(pageT, siteT);
-        }
-        PageParse PageParse = new PageParse(uri, domain, siteT, pageTRepository, siteTRepository, null);
-        try {
-            PageParse.downloadAndSavePage();
-        } catch (IOException ignored) {//
-        }
-        pageT = pageTRepository.findBySiteTBySiteIdAndPath(siteT, uri);
-        parseSinglePage(pageT);
-    }*/
-
-
 
 
 

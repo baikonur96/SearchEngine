@@ -34,6 +34,7 @@ public class IndexingServiceImpl implements IndexingService {
     private final SiteModelRepository siteModelRepository;
     private final List<SiteModel> siteModelList = new Vector<>();
     private final SitesList sites;
+    private final SiteParse siteP;
 
 
     public String UpdateUrl(String url){
@@ -80,34 +81,13 @@ public class IndexingServiceImpl implements IndexingService {
                     siteModelRepository.save(siteModel);
                     siteModelList.add(siteModel);
                     System.out.println("Отдал в поток " + siteModel.getName());
-                    SiteParse siteParse = new SiteParse(pageModelRepository, siteModelRepository);
+                    SiteParse siteParse = siteP.copy();
+                   // SiteParse siteParse = new SiteParse(pageModelRepository, siteModelRepository);
                     siteParse.setSiteId(siteModel.getId());
                     siteParse.setSiteUrl(siteModel.getUrl());
                     executor.submit(siteParse);
                 }
 
-//
-//
-//                // SiteParse sp = siteParse.copy();
-//                String name = e.getName();
-//                Optional<List<SiteModel>> byName = siteModelRepository.findByName(name);
-//                if (byName.isPresent()) {
-//                    siteModelRepository.deleteAllByName(name);
-//                }
-//                ForkJoinPool pool = new ForkJoinPool();
-//                StringBuffer res = new StringBuffer();
-//                res.append(pool.invoke(new SiteParse(e.getUrl(), 0)));
-//                WriteFile(res);
-//                // pool.invoke(new SiteParse(e.getUrl(), 0));
-//                System.out.println("Сайт - " + e.getUrl());
-//                SiteModel siteModel = new SiteModel();
-//                siteModel.setStatus(StatusOption.INDEXED);
-//                siteModel.setStatusTime(Utils.getTimeStamp());
-//                siteModel.setUrl(e.getUrl());
-//                siteModel.setName(e.getName());
-//                siteModelRepository.save(siteModel);
-//                siteModelsList.add(siteModel);
-//            });
                 response.setResult(true);
             }
 
@@ -170,7 +150,8 @@ public class IndexingServiceImpl implements IndexingService {
         siteModelRepository.save(siteModel);
         siteModelList.add(siteModel);
         //System.out.println("Отдал в поток " + siteModel.getName());
-        SiteParse siteParse = new SiteParse(pageModelRepository, siteModelRepository);
+        SiteParse siteParse = siteP.copy();
+       // SiteParse siteParse = new SiteParse(pageModelRepository, siteModelRepository);
         siteParse.setSiteId(siteModel.getId());
         siteParse.setSiteUrl(siteModel.getUrl());
         executor.submit(siteParse);

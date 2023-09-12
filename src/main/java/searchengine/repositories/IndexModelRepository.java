@@ -1,4 +1,3 @@
-/*
 package searchengine.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,7 +19,6 @@ public interface IndexModelRepository extends JpaRepository<IndexModel, Integer>
     List<IndexModel> findAllByLemmaTByLemmaId(LemmaModel lemmaT);
 
     //@Query("select i from IndexT i join PageT  p on p.pageId = i.pageId where i.lemmaTByLemmaId = ?1 and p.siteTBySiteId = ?2")
-    List<IndexModel> findAllByLemmaTByLemmaIdAndSiteId(LemmaModel lemmaT, SiteModel siteT);
+   // List<IndexModel> findAllByLemmaTByLemmaIdAndSiteId(LemmaModel lemmaT, SiteModel siteT);
 
 }
-*/

@@ -12,10 +12,9 @@ import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 import searchengine.model.PageModel;
 import searchengine.model.SiteModel;
-import searchengine.repositories.PageModelRepository;
-import searchengine.repositories.SiteModelRepository;
-import searchengine.repositories.Utils;
+import searchengine.repositories.*;
 
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.lang.invoke.WrongMethodTypeException;
 import java.util.ArrayList;
@@ -31,6 +30,9 @@ import java.util.concurrent.RecursiveTask;
 public class PageParse extends RecursiveAction {
     private final PageModelRepository pageModelRepository;
     private final SiteModelRepository siteModelRepository;
+    private final LemmaModelRepository lemmaModelRepository;
+    private final IndexModelRepository indexModelRepository;
+    private final LemmaParse lemmaP;
 
     Integer siteId;
     String siteUrl;
@@ -57,7 +59,7 @@ public class PageParse extends RecursiveAction {
         }
         return false;
     }
-
+    @Transactional
     public List<String> ParseLink(String link) {
         List<String> outputList = new ArrayList<>();
         try {
@@ -91,8 +93,10 @@ public class PageParse extends RecursiveAction {
             pageModel.setContent(document.html());
             pageModelRepository.save(pageModel);
 
-            Elements elements = document.select("a");
+            LemmaParse lemmParse = lemmaP.copy();
+            lemmParse.parsePage();
 
+            Elements elements = document.select("a");
             for (Element ele : elements) {
                 String linkString = new String(ele.attr("abs:href"));
                 if (CorrectUrl(link, linkString) && !linkString.equals(link) && !linkSet.contains(linkString)) {
@@ -113,7 +117,11 @@ public class PageParse extends RecursiveAction {
         try {
             for (String link : ParseLink(page)) {
                 System.out.println("PageParse: " + link);
-                PageParse pageParse = new PageParse(pageModelRepository, siteModelRepository);
+                PageParse pageParse = new PageParse(pageModelRepository,
+                        siteModelRepository,
+                        lemmaModelRepository,
+                        indexModelRepository,
+                        lemmaP);
                 pageParse.setSiteId(siteId);
                 pageParse.setSiteUrl(siteUrl);
                 pageParse.setPage(link);
