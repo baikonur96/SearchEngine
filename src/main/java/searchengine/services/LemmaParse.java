@@ -1,6 +1,7 @@
 package searchengine.services;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import searchengine.model.IndexModel;
@@ -34,10 +35,14 @@ public class LemmaParse {
                 this.indexTRepository);
     }
 
-
-    public void parsePage() {
+    @Transactional
+    public void parsePage(SiteModel siteModel, PageModel pageModel, String htmlPage) {
         try {
-            System.out.println("lol");
+            LemmaFinder lemmaFinder = LemmaFinder.getInstance();
+            Map<String, Integer> lemmas = lemmaFinder.collectLemmas(htmlPage);
+            for (Map.Entry<String, Integer> entry : lemmas.entrySet()){
+                System.out.println(siteModel.getName() + " - " + pageModel.getPath() + " - " + entry.getKey());
+            }
           //  System.out.println(siteModel.getName());
 //            LemmaFinder l = LemmaFinder.getInstance();
 //            Map<String, Integer> lemmaMap = l.collectLemmas(pageT.getContent());

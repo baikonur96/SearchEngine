@@ -22,11 +22,11 @@ public class Main {
     private static final String[] particlesNames = new String[]{"МЕЖД", "ПРЕДЛ", "СОЮЗ"};
 
     public static void main(String[] args) throws IOException {
-//        LuceneMorphology luceneMorph =
-//                new RussianLuceneMorphology();
-//        List<String> wordBaseForms =
-//                luceneMorph.getNormalForms("and");
-//        wordBaseForms.forEach(System.out::println);
+        LuceneMorphology luceneMorph =
+                new RussianLuceneMorphology();
+        List<String> wordBaseForms =
+                luceneMorph.getNormalForms("леса");
+        wordBaseForms.forEach(System.out::println);
 
 //        LuceneMorphology luceneMorph =
 //                new RussianLuceneMorphology();
