@@ -3,6 +3,7 @@ package searchengine;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.lucene.morphology.LuceneMorphology;
+import org.apache.lucene.morphology.english.EnglishLuceneMorphology;
 import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -18,21 +19,28 @@ import java.util.Vector;
 @RequiredArgsConstructor
 public class Main {
     private final LuceneMorphology luceneMorphology;
-   // private static final String WORD_TYPE_REGEX = "\\W\\w&&[^а-яА-Я\\s]";
+    private static final String WORD_TYPE_REGEX = "\\W\\w&&[^а-яА-Яa-zA-Z\\s]";
     private static final String[] particlesNames = new String[]{"МЕЖД", "ПРЕДЛ", "СОЮЗ"};
 
     public static void main(String[] args) throws IOException {
-        LuceneMorphology luceneMorph =
-                new RussianLuceneMorphology();
-        List<String> wordBaseForms =
-                luceneMorph.getNormalForms("леса");
-        wordBaseForms.forEach(System.out::println);
-
 //        LuceneMorphology luceneMorph =
 //                new RussianLuceneMorphology();
 //        List<String> wordBaseForms =
-//                luceneMorph.getMorphInfo("лес");
+//                luceneMorph.getNormalForms("леса");
 //        wordBaseForms.forEach(System.out::println);
+//
+//        LuceneMorphology luceneMorph =
+//                new EnglishLuceneMorphology();
+//        List<String> wordBaseForms =
+//                luceneMorph.getMorphInfo("we");
+//        wordBaseForms.forEach(System.out::println);
+//
+//       // List<String> wordInfo = luceneMorphology.getMorphInfo(word);
+//        for (String morphInfo : wordBaseForms) {
+//            if (morphInfo.matches(WORD_TYPE_REGEX)) {
+//                System.out.println("true");
+//            }
+//        }
 //
 //        String url = new String("https://www.skillbox.ru");
 //
@@ -41,22 +49,32 @@ public class Main {
 
 
 
-        Connection.Response response;
-        String link = "https://skillbox.ru";
-
-        Document document = null;
-        response = Jsoup.connect(link)
-                .userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) YandexIndexingMachine")
-                .referrer("http://www.google.com")
-                .timeout(5000)
-                .ignoreContentType(false)
-                .execute();
-
-        document = response.parse();
-
-        splitTextIntoWords(Jsoup.parse(document.html()).text());
+//        Connection.Response response;
+//        String link = "https://skillbox.ru";
+//
+//        Document document = null;
+//        response = Jsoup.connect(link)
+//                .userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) YandexIndexingMachine")
+//                .referrer("http://www.google.com")
+//                .timeout(5000)
+//                .ignoreContentType(false)
+//                .execute();
+//
+//        document = response.parse();
+//
+//        splitTextIntoWords(Jsoup.parse(document.html()).text());
 
     }
+
+//    public static boolean isCorrectWordForm(String word) {
+//        List<String> wordInfo = luceneMorphology.getMorphInfo(word);
+//        for (String morphInfo : wordInfo) {
+//            if (morphInfo.matches(WORD_TYPE_REGEX)) {
+//                return false;
+//            }
+//        }
+//        return true;
+//    }
 
     public static String UpdateUrl(String url){
         if (url.endsWith("/")) {

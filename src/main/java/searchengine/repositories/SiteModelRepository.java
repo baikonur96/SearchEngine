@@ -33,6 +33,7 @@ public interface SiteModelRepository extends JpaRepository<SiteModel, Integer>
     SiteModel findByUrl(String url);
 
     //@Query(value = "select s from SiteModel s join PageModel p on s.id = p.id where p.id =?1")
-    //SiteModel findByPageId(int page);
+//    @Transactional
+//    SiteModel findByPageId(int page);
 
 }

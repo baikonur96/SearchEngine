@@ -13,13 +13,24 @@ import java.util.List;
 @Repository
 public interface LemmaModelRepository extends JpaRepository<LemmaModel, Integer> {
 
-    List<LemmaModel> findAllByLemmaId(int lemmaId);
+//    List<LemmaModel> findAllByLemmaId(int lemmaId);
+//
+//    List<LemmaModel> findAllByLemma(String lemma);
 
-    List<LemmaModel> findAllByLemma(String lemma);
-    LemmaModel findByLemmaAndSiteModelBySiteId(String lemma, SiteModel siteModel);
+  //  LemmaModel findByLemmaAndSiteModelBySiteId();
+
     @Transactional
-    void deleteBySiteModelBySiteIdAndFrequency(SiteModel siteModel, int frequency);
+    boolean existsByLemma(String lemma);
 
-    int countBySiteModelBySiteId(SiteModel siteT);
+    @Transactional
+    LemmaModel findByLemmaAndSiteModelId(String lemma, SiteModel siteModel);
+
+//    @Transactional
+//    LemmaModel findByLemmaAndSiteModel(String lemma, SiteModel siteModel);
+
+//    @Transactional
+//    void deleteBySiteModelBySiteIdAndFrequency(SiteModel siteModel, int frequency);
+//
+//    int countBySiteModelBySiteId(SiteModel siteT);
 
 }

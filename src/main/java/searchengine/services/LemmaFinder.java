@@ -59,10 +59,6 @@ public class LemmaFinder  {
             }
 
         }
-        for (String op : result){
-            System.out.println(op);
-        }
-        System.out.println(result);
         return result;
     }
 
@@ -72,7 +68,8 @@ public class LemmaFinder  {
         HashMap<String, Integer> lemmas = new HashMap<>();
         List<String> words = splitTextIntoWords(Jsoup.parse(textHtml).text());
         for (String word : words) {
-            if (word.isBlank()) {
+           // System.out.println(word + " - " + word.length());
+            if (word.isBlank() || (word.trim().length() < 2)) {
                 continue;
             }
             if (isRussian(word)){
@@ -81,8 +78,15 @@ public class LemmaFinder  {
                 luceneMorphology = morphologyEng;
             }
 
-            List<String> wordBaseForms = luceneMorphology.getMorphInfo(word);
-            if (anyWordBaseBelongToParticle(wordBaseForms)) {
+//            if (morphInfo.matches(WORD_TYPE_REGEX)) {
+//                return false;
+//            }
+            try {
+                List<String> wordBaseForms = luceneMorphology.getMorphInfo(word);
+                if (anyWordBaseBelongToParticle(wordBaseForms)) {
+                    continue;
+                }
+            }catch (Exception e){
                 continue;
             }
 

@@ -14,9 +14,9 @@ import java.util.List;
 @Repository
 public interface IndexModelRepository extends JpaRepository<IndexModel, Integer> {
 
-    List<IndexModel> findByPageTByPageId(PageModel pageT);
-
-    List<IndexModel> findAllByLemmaTByLemmaId(LemmaModel lemmaT);
+//    List<IndexModel> findByPageTByPageId(PageModel pageT);
+//
+//    List<IndexModel> findAllByLemmaTByLemmaId(LemmaModel lemmaT);
 
     //@Query("select i from IndexT i join PageT  p on p.pageId = i.pageId where i.lemmaTByLemmaId = ?1 and p.siteTBySiteId = ?2")
    // List<IndexModel> findAllByLemmaTByLemmaIdAndSiteId(LemmaModel lemmaT, SiteModel siteT);

@@ -14,7 +14,7 @@ public class LemmaModel {
     @Column(name = "id", nullable = false)
     private Integer id;
     @ManyToOne(targetEntity = SiteModel.class)
-    @JoinColumn(name = "site_id", nullable = false, insertable = false, updatable = false)
+    @JoinColumn(name = "site_id")//, nullable = false, insertable = false, updatable = false)
     private SiteModel siteModelId;
     @Column(columnDefinition = "VARCHAR(255)", nullable = false)
     private String lemma;

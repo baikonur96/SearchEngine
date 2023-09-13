@@ -17,7 +17,7 @@ public interface PageModelRepository extends JpaRepository<PageModel, Integer>
     void deleteAllBySiteModelId(SiteModel siteModel);
 
 
-//    List<PageModel> findBySiteTBySiteIdAndCode(SiteModel site, int code);
+//    List<PageModel> findBySiteModelBySiteIdAndCode(SiteModel site, int code);
 //
 //    int countBySiteModelBySiteId(SiteModel siteModel);
 //

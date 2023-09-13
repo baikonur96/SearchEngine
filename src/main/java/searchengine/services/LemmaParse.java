@@ -13,26 +13,23 @@ import searchengine.repositories.LemmaModelRepository;
 import searchengine.repositories.PageModelRepository;
 import searchengine.repositories.SiteModelRepository;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class LemmaParse {
 
-    private final PageModelRepository pageTRepository;
-    private final SiteModelRepository siteTRepository;
-    private final LemmaModelRepository lemmaTRepository;
-    private final IndexModelRepository indexTRepository;
+    private final PageModelRepository pageModelRepository;
+    private final SiteModelRepository siteModelRepository;
+    private final LemmaModelRepository lemmaModelRepository;
+    private final IndexModelRepository indexModelRepository;
 
 
     public LemmaParse copy() {
-        return new LemmaParse(this.pageTRepository,
-                this.siteTRepository,
-                this.lemmaTRepository,
-                this.indexTRepository);
+        return new LemmaParse(this.pageModelRepository,
+                this.siteModelRepository,
+                this.lemmaModelRepository,
+                this.indexModelRepository);
     }
 
     @Transactional
@@ -40,10 +37,41 @@ public class LemmaParse {
         try {
             LemmaFinder lemmaFinder = LemmaFinder.getInstance();
             Map<String, Integer> lemmas = lemmaFinder.collectLemmas(htmlPage);
+            Set<LemmaModel> setLemmaModel = new HashSet<>();
+            Set<IndexModel> setIndexModel = new HashSet<>();
             for (Map.Entry<String, Integer> entry : lemmas.entrySet()){
-                System.out.println(siteModel.getName() + " - " + pageModel.getPath() + " - " + entry.getKey());
+                LemmaModel lemmaModel = new LemmaModel();
+                System.out.println("1 - " + entry.getKey());
+                if (lemmaModelRepository.existsByLemma(entry.getKey())){
+                    LemmaModel existLemmaModel = lemmaModelRepository.findByLemmaAndSiteModelId(entry.getKey(), siteModel);
+                    existLemmaModel.setFrequency(existLemmaModel.getFrequency() + 1);
+                    lemmaModelRepository.save(existLemmaModel);
+                    System.out.println("lol");
+                    System.out.println("2 - " + entry.getKey());
+                    continue;
+                }
+                System.out.println("3 - " + entry.getKey());
+               // LemmaModel lemma = lemmaModelRepository.findByLemmaAndSiteModel(entry.getKey(), siteModel);
+
+                lemmaModel.setLemma(entry.getKey());
+                lemmaModel.setFrequency(1);
+                lemmaModel.setSiteModelId(siteModel);
+                setLemmaModel.add(lemmaModel);
+                IndexModel indexModel = new IndexModel();
+                indexModel.setLemmaModelId(lemmaModel);
+                indexModel.setPageModelId(pageModel);
+                indexModel.setRank(entry.getValue());
+                setIndexModel.add(indexModel);
+               // lemmaModelRepository.save(lemmaModel);
+               // System.out.println(siteModel.getName() + " - " + pageModel.getPath() + " - " + entry.getKey());
+
             }
-          //  System.out.println(siteModel.getName());
+
+            lemmaModelRepository.saveAll(setLemmaModel);
+            indexModelRepository.saveAll(setIndexModel);
+
+
+//            System.out.println(siteModel.getName());
 //            LemmaFinder l = LemmaFinder.getInstance();
 //            Map<String, Integer> lemmaMap = l.collectLemmas(pageT.getContent());
 //            Map<LemmaModel, Integer> lemmaModelList = new HashMap<>();
