@@ -65,7 +65,7 @@ public class LemmaFinder  {
 
     public Map<String, Integer> collectLemmas(String textHtml) {
         LuceneMorphology luceneMorphology;
-        HashMap<String, Integer> lemmas = new HashMap<>();
+        Map<String, Integer> lemmas = new Hashtable<>();
         List<String> words = splitTextIntoWords(Jsoup.parse(textHtml).text());
         for (String word : words) {
            // System.out.println(word + " - " + word.length());

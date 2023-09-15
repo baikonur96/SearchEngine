@@ -41,12 +41,6 @@ public class PageParse extends RecursiveAction {
     private Connection.Response response;
     public static List<String> linkSet = new Vector<>();
 
-
-    public void addPage() {
-
-    }
-
-
     public boolean CorrectUrl(String startLink, String link) {
         if (!link.isEmpty() && link.startsWith(startLink) &&
                 (link.length() + 1) > startLink.length() &&
@@ -93,9 +87,10 @@ public class PageParse extends RecursiveAction {
             pageModel.setContent(document.html());
             pageModelRepository.save(pageModel);
 
-
-            LemmaParse lemmParse = lemmaP.copy();
-            lemmParse.parsePage(siteModel, pageModel, document.html());
+            if (response.statusCode() == 200) {
+                LemmaParse lemmParse = lemmaP.copy();
+                lemmParse.parsePage(siteModel, pageModel, document.html());
+            }
 
             Elements elements = document.select("a");
             for (Element ele : elements) {

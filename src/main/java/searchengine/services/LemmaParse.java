@@ -33,7 +33,7 @@ public class LemmaParse {
     }
 
     @Transactional
-    public void parsePage(SiteModel siteModel, PageModel pageModel, String htmlPage) {
+    public synchronized void parsePage(SiteModel siteModel, PageModel pageModel, String htmlPage) {
         try {
             LemmaFinder lemmaFinder = LemmaFinder.getInstance();
             Map<String, Integer> lemmas = lemmaFinder.collectLemmas(htmlPage);
@@ -42,33 +42,40 @@ public class LemmaParse {
             for (Map.Entry<String, Integer> entry : lemmas.entrySet()){
                 LemmaModel lemmaModel = new LemmaModel();
                 System.out.println("1 - " + entry.getKey());
-                if (lemmaModelRepository.existsByLemma(entry.getKey())){
-                    LemmaModel existLemmaModel = lemmaModelRepository.findByLemmaAndSiteModelId(entry.getKey(), siteModel);
-                    existLemmaModel.setFrequency(existLemmaModel.getFrequency() + 1);
-                    lemmaModelRepository.save(existLemmaModel);
-                    System.out.println("lol");
-                    System.out.println("2 - " + entry.getKey());
-                    continue;
-                }
-                System.out.println("3 - " + entry.getKey());
-               // LemmaModel lemma = lemmaModelRepository.findByLemmaAndSiteModel(entry.getKey(), siteModel);
 
-                lemmaModel.setLemma(entry.getKey());
-                lemmaModel.setFrequency(1);
-                lemmaModel.setSiteModelId(siteModel);
-                setLemmaModel.add(lemmaModel);
+                if (lemmaModelRepository.existsByLemmaAndSiteModelId(entry.getKey(), siteModel)){
+                    lemmaModel = lemmaModelRepository.findByLemmaAndSiteModelId(entry.getKey(), siteModel);
+                    lemmaModel.setFrequency(lemmaModel.getFrequency() + 1);
+                    setLemmaModel.add(lemmaModel);
+                    System.out.println("lol");
+
+                    IndexModel indexModel = new IndexModel();
+                    indexModel.setLemmaModelId(lemmaModel);
+                    indexModel.setPageModelId(pageModel);
+                    indexModel.setRank(entry.getValue());
+
+                    System.out.println("2 - " + entry.getKey());
+                }else {
+                    System.out.println("3 - " + entry.getKey());
+
+                    lemmaModel.setLemma(entry.getKey());
+                    lemmaModel.setFrequency(1);
+                    lemmaModel.setSiteModelId(siteModel);
+                    setLemmaModel.add(lemmaModel);
+
+                }
+
                 IndexModel indexModel = new IndexModel();
                 indexModel.setLemmaModelId(lemmaModel);
                 indexModel.setPageModelId(pageModel);
                 indexModel.setRank(entry.getValue());
                 setIndexModel.add(indexModel);
-               // lemmaModelRepository.save(lemmaModel);
-               // System.out.println(siteModel.getName() + " - " + pageModel.getPath() + " - " + entry.getKey());
 
             }
-
-            lemmaModelRepository.saveAll(setLemmaModel);
-            indexModelRepository.saveAll(setIndexModel);
+            //lemmaModelRepository.flush();
+            lemmaModelRepository.saveAllAndFlush(setLemmaModel);
+            indexModelRepository.saveAllAndFlush(setIndexModel);
+           // indexModelRepository.saveAll(setIndexModel);
 
 
 //            System.out.println(siteModel.getName());
@@ -81,6 +88,7 @@ public class LemmaParse {
 //            lemmaModelList.entrySet().forEach(e -> indexTList.add(new IndexT(pageModel.get(), e.getKey().getLemmaId(), e.getValue())));
 //            indexTRepository.saveAll(indexTList);
         } catch (Exception e) {
+            System.out.println("Ошибка - parsePage" + pageModel.getPath() );
             e.printStackTrace();
         }
     }
