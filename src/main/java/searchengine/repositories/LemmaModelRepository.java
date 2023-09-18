@@ -28,6 +28,8 @@ public interface LemmaModelRepository extends JpaRepository<LemmaModel, Integer>
     @Transactional
     LemmaModel findByLemmaAndSiteModelId(String lemma, SiteModel siteModel);
 
+    @Transactional
+    int countBySiteModelId(SiteModel siteModel);
 //    @Transactional
 //    LemmaModel findByLemmaAndSiteModel(String lemma, SiteModel siteModel);
 

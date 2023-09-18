@@ -8,14 +8,25 @@ import searchengine.dto.statistics.DetailedStatisticsItem;
 import searchengine.dto.statistics.StatisticsData;
 import searchengine.dto.statistics.StatisticsResponse;
 import searchengine.dto.statistics.TotalStatistics;
+import searchengine.model.SiteModel;
+import searchengine.repositories.IndexModelRepository;
+import searchengine.repositories.LemmaModelRepository;
+import searchengine.repositories.PageModelRepository;
+import searchengine.repositories.SiteModelRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
 public class StatisticsServiceImpl implements StatisticsService {
+
+    private final SiteModelRepository siteModelRepository;
+    private final PageModelRepository pageModelRepository;
+    private final LemmaModelRepository lemmaModelRepository;
+    private final IndexModelRepository indexModelRepository;
 
     private final Random random = new Random();
     private final SitesList sites;
@@ -39,17 +50,21 @@ public class StatisticsServiceImpl implements StatisticsService {
         List<Site> sitesList = sites.getSites();
         for(int i = 0; i < sitesList.size(); i++) {
             Site site = sitesList.get(i);
+           List<SiteModel> listSiteModel = siteModelRepository.findByName(site.getName()).orElse(null);
+            if (listSiteModel == null || listSiteModel.isEmpty()) continue;
+
+            SiteModel siteModel = listSiteModel.get(0);
             DetailedStatisticsItem item = new DetailedStatisticsItem();
             item.setName(site.getName());
             item.setUrl(site.getUrl());
-            int pages = random.nextInt(1_000);
-            int lemmas = pages * random.nextInt(1_000);
+            int pages = pageModelRepository.countBySiteModelId(siteModel);
+            int lemmas = lemmaModelRepository.countBySiteModelId(siteModel);
+
             item.setPages(pages);
             item.setLemmas(lemmas);
-            item.setStatus(statuses[i % 3]);
-            item.setError(errors[i % 3]);
-            item.setStatusTime(System.currentTimeMillis() -
-                    (random.nextInt(10_000)));
+            item.setStatus(siteModel.getStatus().toString());
+            item.setError(siteModel.getLastError());
+            item.setStatusTime(siteModel.getStatusTime().getTime());
             total.setPages(total.getPages() + pages);
             total.setLemmas(total.getLemmas() + lemmas);
             detailed.add(item);

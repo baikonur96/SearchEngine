@@ -16,12 +16,13 @@ public interface PageModelRepository extends JpaRepository<PageModel, Integer>
     @Transactional
     void deleteAllBySiteModelId(SiteModel siteModel);
 
+    int countBySiteModelId(SiteModel siteModel);
 
 //    List<PageModel> findBySiteModelBySiteIdAndCode(SiteModel site, int code);
 //
 //    int countBySiteModelBySiteId(SiteModel siteModel);
 //
-//    PageModel findByPageId(int pageId);
+    // PageModel findBysiteModelId(int pageId);
 //
 //    PageModel findBySiteTBySiteIdAndPath(SiteModel siteModel, String path);
 }
