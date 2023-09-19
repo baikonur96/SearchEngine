@@ -1,9 +1,6 @@
 package searchengine.repositories;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Example;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import searchengine.model.SiteModel;
 
@@ -22,6 +19,9 @@ public interface SiteModelRepository extends JpaRepository<SiteModel, Integer>
 
     @Transactional
     boolean existsByUrl(String url);
+
+    @Transactional
+    List<SiteModel> findAll();
 
      @Transactional
     void deleteAllByName(String name);

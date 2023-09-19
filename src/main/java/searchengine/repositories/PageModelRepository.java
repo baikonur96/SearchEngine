@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import searchengine.model.LemmaModel;
 import searchengine.model.PageModel;
 import searchengine.model.SiteModel;
 
@@ -17,6 +18,9 @@ public interface PageModelRepository extends JpaRepository<PageModel, Integer>
     void deleteAllBySiteModelId(SiteModel siteModel);
 
     int countBySiteModelId(SiteModel siteModel);
+
+    @Transactional
+    PageModel findByPathAndSiteModelId(String path, SiteModel siteModel);
 
 //    List<PageModel> findBySiteModelBySiteIdAndCode(SiteModel site, int code);
 //

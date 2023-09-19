@@ -49,10 +49,10 @@ public class LemmaParse {
                     setLemmaModel.add(lemmaModel);
                     System.out.println("lol");
 
-                    IndexModel indexModel = new IndexModel();
-                    indexModel.setLemmaModelId(lemmaModel);
-                    indexModel.setPageModelId(pageModel);
-                    indexModel.setRank(entry.getValue());
+//                    IndexModel indexModel = new IndexModel();
+//                    indexModel.setLemmaModelId(lemmaModel);
+//                    indexModel.setPageModelId(pageModel);
+//                    indexModel.setRank(entry.getValue());
 
                     System.out.println("2 - " + entry.getKey());
                 }else {

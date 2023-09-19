@@ -37,12 +37,6 @@ public class ApiController {
 
     @GetMapping("/startIndexing")
     public ResponseEntity<IndexingResponse> StartIndex() {
-       // String sessionId = RequestContextHolder.currentRequestAttributes().getSessionId();
-          //  StringBuffer result  = new StringBuffer();
-
-          //  ForkJoinPool pool = new ForkJoinPool();
-        //    result.append(pool.invoke(new IndexingService(START_URL, 0)));
-        //    result.append(pool.invoke(new services.StartIndexingService(START_URL, 0)));
             return ResponseEntity.ok(indexingService.getStartIndexing());
     }
 

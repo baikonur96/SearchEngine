@@ -23,15 +23,16 @@ import searchengine.dto.indexing.IndexingResponse;
 import searchengine.model.PageModel;
 import searchengine.model.SiteModel;
 import searchengine.model.StatusOption;
-import searchengine.repositories.PageModelRepository;
-import searchengine.repositories.SiteModelRepository;
-import searchengine.repositories.Utils;
+import searchengine.repositories.*;
 
 @Service
 @RequiredArgsConstructor
 public class IndexingServiceImpl implements IndexingService {
     private final PageModelRepository pageModelRepository;
     private final SiteModelRepository siteModelRepository;
+    private final LemmaModelRepository lemmaModelRepository;
+    private final IndexModelRepository indexModelRepository;
+    private final LemmaParse lemmaParse;
     private final List<SiteModel> siteModelList = new Vector<>();
     private final SitesList sites;
     private final SiteParse siteP;
@@ -55,7 +56,7 @@ public class IndexingServiceImpl implements IndexingService {
         siteModelList.clear();
         IndexingResponse response = new IndexingResponse();
         try {
-            response = new IndexingResponse();
+            // response = new IndexingResponse();
             List<Site> siteList = sites.getSites();
             if (siteList.stream()
                     .map(e -> siteModelRepository.countByNameAndStatus(e.getName(), StatusOption.INDEXING))
@@ -133,32 +134,30 @@ public class IndexingServiceImpl implements IndexingService {
     @Override
     public IndexingResponse indexPage(String url) {
         IndexingResponse response = new IndexingResponse();
+        List<SiteModel> listSiteModel = siteModelRepository.findAll();
+        for (SiteModel siteModelExp : listSiteModel){
+                    if (url.contains(siteModelExp.getUrl())){
+                      //  PageModel pageModel = pageModelRepository.findByPathAndSiteModelId(url, siteModelExp);
+                        pageModelRepository.deleteAllBySiteModelId(siteModelExp);
+                        siteModelRepository.deleteAllByUrl(siteModelExp.getUrl());
 
-        if (siteModelRepository.existsByUrl(url)) {
-            SiteModel siteModel = siteModelRepository.findByUrl(url.trim());
-            pageModelRepository.deleteAllBySiteModelId(siteModel);
-            siteModelRepository.deleteAllByUrl(url.trim());
+                        PageParse pageParse = new PageParse(pageModelRepository,
+                                siteModelRepository,
+                                lemmaModelRepository,
+                                indexModelRepository,
+                                lemmaParse);
+
+                        pageParse.setSiteId(siteModelExp.getId());
+                        pageParse.setSiteUrl(siteModelExp.getUrl());
+                        pageParse.setPage(url);
+
+                        response.setResult(true);
+                        return response;
+                    }
         }
-        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(4);
-        executor.setMaximumPoolSize(Runtime.getRuntime().availableProcessors());
-
-        SiteModel siteModel = new SiteModel();
-        siteModel.setStatus(StatusOption.INDEXING);
-        siteModel.setStatusTime(Utils.getTimeStamp());
-        siteModel.setUrl(UpdateUrl(url.trim()));
-        siteModel.setName(url.substring(8));
-        siteModelRepository.save(siteModel);
-        siteModelList.add(siteModel);
-        //System.out.println("Отдал в поток " + siteModel.getName());
-        SiteParse siteParse = siteP.copy();
-       // SiteParse siteParse = new SiteParse(pageModelRepository, siteModelRepository);
-        siteParse.setSiteId(siteModel.getId());
-        siteParse.setSiteUrl(siteModel.getUrl());
-        executor.submit(siteParse);
-        //System.out.println("Запущена индексация");
-
-
-        response.setResult(true);
+        response.setResult(false);
+        response.setError("Данная страница находится за пределами сайтов,\n" +
+                "указанных в конфигурационном файле");
         return response;
     }
 
