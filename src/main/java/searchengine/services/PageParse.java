@@ -88,6 +88,7 @@ public class PageParse extends RecursiveAction {
             pageModelRepository.save(pageModel);
 
             if (response.statusCode() == 200) {
+
                 LemmaParse lemmParse = lemmaP.copy();
                 lemmParse.parsePage(siteModel, pageModel, document.html());
             }

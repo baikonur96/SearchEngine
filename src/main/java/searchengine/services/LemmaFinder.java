@@ -63,7 +63,7 @@ public class LemmaFinder  {
     }
 
 
-    public Map<String, Integer> collectLemmas(String textHtml) {
+    public synchronized Map<String, Integer> collectLemmas(String textHtml) {
         LuceneMorphology luceneMorphology;
         Map<String, Integer> lemmas = new Hashtable<>();
         List<String> words = splitTextIntoWords(Jsoup.parse(textHtml).text());
