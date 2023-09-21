@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 import searchengine.dto.indexing.IndexingResponse;
+import searchengine.dto.search.SearchResponse;
 import searchengine.dto.statistics.StatisticsResponse;
 import searchengine.services.IndexingService;
 import searchengine.services.SearchService;
@@ -54,5 +55,19 @@ public class ApiController {
 
         return ResponseEntity.ok(indexingService.indexPage(url));
     }
+
+//    public ResponseEntity<SearchResponse> search(
+//            @RequestParam(value = "query") String query,
+//            @RequestParam(value = "site", required = false) String site,
+//            @RequestParam(value = "offset", required = false) Integer offset,
+//            @RequestParam(value = "limit", required = false) Integer limit) {
+//        SearchQueryBuilder sb = SearchQueryBuilder.newBuilder()
+//                .withQuery(query)
+//                .withSite(site)
+//                .withOffset(offset)
+//                .withLimit(limit)
+//                .build();
+//        return ResponseEntity.ok(searchService.search(sb.getQuery(), sb.getSite(), sb.getOffset(), sb.getLimit()));
+//    }
 
 }

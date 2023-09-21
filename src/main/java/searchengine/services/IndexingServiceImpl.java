@@ -137,10 +137,8 @@ public class IndexingServiceImpl implements IndexingService {
         List<SiteModel> listSiteModel = siteModelRepository.findAll();
         for (SiteModel siteModelExp : listSiteModel){
                     if (url.contains(siteModelExp.getUrl())){
-                      //  PageModel pageModel = pageModelRepository.findByPathAndSiteModelId(url, siteModelExp);
                         pageModelRepository.deleteAllBySiteModelId(siteModelExp);
                         siteModelRepository.deleteAllByUrl(siteModelExp.getUrl());
-
                         PageParse pageParse = new PageParse(pageModelRepository,
                                 siteModelRepository,
                                 lemmaModelRepository,
