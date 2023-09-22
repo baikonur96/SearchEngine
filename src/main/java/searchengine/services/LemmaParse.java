@@ -5,10 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import searchengine.config.Site;
-import searchengine.model.IndexModel;
-import searchengine.model.LemmaModel;
-import searchengine.model.PageModel;
-import searchengine.model.SiteModel;
+import searchengine.model.*;
 import searchengine.repositories.IndexModelRepository;
 import searchengine.repositories.LemmaModelRepository;
 import searchengine.repositories.PageModelRepository;
@@ -25,7 +22,6 @@ public class LemmaParse {
     private final SiteModelRepository siteModelRepository;
     private final LemmaModelRepository lemmaModelRepository;
     private final IndexModelRepository indexModelRepository;
-    private SiteModel siteModel;
     public static Map<String, SiteModel> completeLemma;
 
     public LemmaParse copy() {
@@ -43,16 +39,22 @@ public class LemmaParse {
             LemmaFinder lemmaFinder = LemmaFinder.getInstance();
             Map<String, Integer> lemmas = lemmaFinder.collectLemmas(htmlPage);
 
-            LemmaModel lemmaModel = new LemmaModel();
-            IndexModel indexModel = new IndexModel();
+
 
             Set<LemmaModel> listLemmaModel = new HashSet<>();
             List<IndexModel> listIndexModel = new ArrayList<>();
 
             for (Map.Entry<String, Integer> entry : lemmas.entrySet()) {
+                IndexModel indexModel = new IndexModel();
+                LemmaModel lemmaModel = new LemmaModel();
+
+                lemmaModel.setSiteModelId(siteModel);
                 lemmaModel.setLemma(entry.getKey());
                 lemmaModel.setFrequency(1);
-                lemmaModel.setSiteModelId(siteModel);
+
+//                lemmaModel.setLemma(entry.getKey());
+
+//                lemmaModel.setSiteModelId(siteModel);
                 listLemmaModel.add(lemmaModel);
 
                 indexModel.setLemmaModelId(lemmaModel);
