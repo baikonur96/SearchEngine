@@ -52,9 +52,9 @@ public class LemmaParse {
                 lemmaModel.setLemma(entry.getKey());
                 lemmaModel.setFrequency(1);
 
-//                lemmaModel.setLemma(entry.getKey());
+//              lemmaModel.setLemma(entry.getKey());
 
-//                lemmaModel.setSiteModelId(siteModel);
+//              lemmaModel.setSiteModelId(siteModel);
                 listLemmaModel.add(lemmaModel);
 
                 indexModel.setLemmaModelId(lemmaModel);

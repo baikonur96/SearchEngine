@@ -7,6 +7,7 @@ import searchengine.dto.indexing.IndexingResponse;
 import searchengine.dto.search.SearchResponse;
 import searchengine.dto.statistics.StatisticsResponse;
 import searchengine.services.IndexingService;
+import searchengine.services.SearchQueryBuilder;
 import searchengine.services.SearchService;
 import searchengine.services.StatisticsService;
 
@@ -21,14 +22,13 @@ public class ApiController {
 
 
     private final StatisticsService statisticsService;
-
     private final IndexingService indexingService;
+    private final SearchService searchService;
 
-   // private final SearchService searchService;
-
-    public ApiController(StatisticsService statisticsService, IndexingService indexingService) {
+    public ApiController(StatisticsService statisticsService, IndexingService indexingService, SearchService searchService) {
         this.statisticsService = statisticsService;
         this.indexingService = indexingService;
+        this.searchService = searchService;
     }
 
     @GetMapping("/statistics")
@@ -56,18 +56,19 @@ public class ApiController {
         return ResponseEntity.ok(indexingService.indexPage(url));
     }
 
-//    public ResponseEntity<SearchResponse> search(
-//            @RequestParam(value = "query") String query,
-//            @RequestParam(value = "site", required = false) String site,
-//            @RequestParam(value = "offset", required = false) Integer offset,
-//            @RequestParam(value = "limit", required = false) Integer limit) {
-//        SearchQueryBuilder sb = SearchQueryBuilder.newBuilder()
-//                .withQuery(query)
-//                .withSite(site)
-//                .withOffset(offset)
-//                .withLimit(limit)
-//                .build();
-//        return ResponseEntity.ok(searchService.search(sb.getQuery(), sb.getSite(), sb.getOffset(), sb.getLimit()));
-//    }
+    @GetMapping("/search")
+    public ResponseEntity<SearchResponse> search(
+            @RequestParam(value = "query") String query,
+            @RequestParam(value = "site", required = false) String site,
+            @RequestParam(value = "offset", required = false) Integer offset,
+            @RequestParam(value = "limit", required = false) Integer limit) {
+        SearchQueryBuilder sb = SearchQueryBuilder.newBuilder()
+                .withQuery(query)
+                .withSite(site)
+                .withOffset(offset)
+                .withLimit(limit)
+                .build();
+        return ResponseEntity.ok(searchService.search(sb.getQuery(), sb.getSite(), sb.getOffset(), sb.getLimit()));
+    }
 
 }
