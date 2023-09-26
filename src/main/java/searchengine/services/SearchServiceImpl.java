@@ -3,6 +3,7 @@ package searchengine.services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import searchengine.dto.search.SearchResponse;
+import searchengine.model.LemmaModel;
 import searchengine.model.SiteModel;
 import searchengine.repositories.IndexModelRepository;
 import searchengine.repositories.LemmaModelRepository;
@@ -10,10 +11,7 @@ import searchengine.repositories.PageModelRepository;
 import searchengine.repositories.SiteModelRepository;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 @Service
@@ -26,16 +24,28 @@ public class SearchServiceImpl implements SearchService {
     private List<String> queryLemmas = new ArrayList<>();
 
 
-
     @Override
     public SearchResponse search(String query, String site, Integer offset, Integer limit) {
-        queryLemmas = new ArrayList<>();
         SearchResponse searchResponse = new SearchResponse();
+        queryLemmas = new ArrayList<>();
         try {
-
             SiteModel searchSite = siteModelRepository.findByUrl(site);
             Map<String, Integer> lemmas = LemmaFinder.getInstance().collectLemmas(query);
+            for (Map.Entry<String, Integer> entry : lemmas.entrySet()) {
+                List<LemmaModel> listLemmaModelInDb = new ArrayList<>();
+                if (site == null) {
+                    List<LemmaModel> listRepLemma = lemmaModelRepository.findAllByLemma(entry.getKey()); // Надо передать методу который разберёт лист и передаст объект с наименьшим frequency
+                } else {
+                    listLemmaModelInDb.add(lemmaModelRepository.findByLemmaAndSiteModelId(entry.getKey(), searchSite));
 
+                   // res = indexModelRepository.findAllByLemmaModelByLemmaIdAndSiteId(lemT, searchSite);
+                }
+
+
+                lemmaModelRepository.findByLemmaAndSiteModelId(entry.getKey(), );
+
+
+            }
 
 //            lemmas.keySet().forEach(lem -> {
 //                queryLemmas.add(lem)
@@ -95,6 +105,11 @@ public class SearchServiceImpl implements SearchService {
     }
 
 
+        public LemmaModel getLeastFrequency(List<LemmaModel> listLemmaModel) {
+
+
+        return new LemmaModel();
+        }
 /*    public String getAt(String st, int pos) {
         StringBuilder sb = new StringBuilder();
         String[] tokens = st.split(" ");

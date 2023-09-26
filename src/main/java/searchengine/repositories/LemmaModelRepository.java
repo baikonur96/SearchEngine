@@ -26,6 +26,9 @@ public interface LemmaModelRepository extends JpaRepository<LemmaModel, Integer>
     boolean existsByLemmaAndSiteModelId(String lemma, SiteModel siteModel);
 
     @Transactional
+    List<LemmaModel> findAllByLemma(String lemma);
+
+    @Transactional
     LemmaModel findByLemmaAndSiteModelId(String lemma, SiteModel siteModel);
 
     @Transactional
