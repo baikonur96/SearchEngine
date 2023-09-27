@@ -1,10 +1,11 @@
-/*
 package searchengine.services;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import searchengine.dto.search.SearchResponse;
+import searchengine.model.IndexModel;
 import searchengine.model.LemmaModel;
+import searchengine.model.PageModel;
 import searchengine.model.SiteModel;
 import searchengine.repositories.IndexModelRepository;
 import searchengine.repositories.LemmaModelRepository;
@@ -32,21 +33,49 @@ public class SearchServiceImpl implements SearchService {
         try {
             SiteModel searchSite = siteModelRepository.findByUrl(site);
             Map<String, Integer> lemmas = LemmaFinder.getInstance().collectLemmas(query);
+            List<PageModel> listPageModelinDB = new ArrayList<>();
+            List<LemmaModel> listLemmaModelInDb = new ArrayList<>();
+            List<IndexModel> listIndexModelInDb = new ArrayList<>();
             for (Map.Entry<String, Integer> entry : lemmas.entrySet()) {
-                List<LemmaModel> listLemmaModelInDb = new ArrayList<>();
                 if (site == null) {
-                    List<LemmaModel> listRepLemma = lemmaModelRepository.findAllByLemma(entry.getKey()); // Надо передать методу который разберёт лист и передаст объект с наименьшим frequency
+                    // Надо передать методу который разберёт лист и передаст объект с наименьшим frequency
+                    // Если нет сайта
+                    List<LemmaModel> listRepLemma = lemmaModelRepository.findAllByLemma(entry.getKey());
+                    listRepLemma.sort(Comparator.comparing(LemmaModel::getFrequency));
+                    listLemmaModelInDb.add(listRepLemma.get(0));
                 } else {
                     listLemmaModelInDb.add(lemmaModelRepository.findByLemmaAndSiteModelId(entry.getKey(), searchSite));
-
-                   // res = indexModelRepository.findAllByLemmaModelByLemmaIdAndSiteId(lemT, searchSite);
                 }
 
-
-                lemmaModelRepository.findByLemmaAndSiteModelId(entry.getKey(), );
+            }
+            listLemmaModelInDb.sort(Comparator.comparing(LemmaModel::getFrequency));
+            listIndexModelInDb.addAll(indexModelRepository.findAllByLemmaId(listLemmaModelInDb.get(0)));
+            for (int i = 1; i < listLemmaModelInDb.size(); i++){
+                List<IndexModel> otherListIndexModel = indexModelRepository.findAllByLemmaId(listLemmaModelInDb.get(i));
+                otherListIndexModel.forEach(model -> {
+                    if (!listLemmaModelInDb.contains(model)){
+                        listIndexModelInDb.remove(model);
+                    }
+                });
+            }
+            Set<PageModel> pageModelSet = new LinkedHashSet<>();
+            for (int y = 0; y < listIndexModelInDb.size(); y++){
+                PageModel pageModel = pageModelRepository.findById(listIndexModelInDb.get(y).getPageModelId());
+                pageModelSet.add(pageModelRepository.findById(listPageModelinDB.get(y)));
 
 
             }
+
+
+
+
+
+
+
+              //  lemmaModelRepository.findByLemmaAndSiteModelId(entry.getKey(), );
+
+
+
 
 //            lemmas.keySet().forEach(lem -> {
 //                queryLemmas.add(lem)
@@ -111,34 +140,32 @@ public class SearchServiceImpl implements SearchService {
 
         return new LemmaModel();
         }
-*/
-/*    public String getAt(String st, int pos) {
-        StringBuilder sb = new StringBuilder();
-        String[] tokens = st.split(" ");
-
-        int pre = 10;
-        int post = 10;
-        if (pos < pre) {
-            pre = pos;
-            post = post + 10 - pos;
-        }
-        if (pos > tokens.length - post) {
-            post = tokens.length - post - 1;
-            pre = pre + (10 - post);
-        }
-
-        for (int i = pos - pre; i < pos + post; i++) {
-            if (lemmaFinder.collectLemmas(tokens[i]).size() > 0 &&
-                    queryLemmas.contains(lemmaFinder.collectLemmas(tokens[i]).keySet().stream().findFirst().orElse(""))) {
-                sb.append("<b>").append(tokens[i]).append("</b>");
-            } else {
-                sb.append(tokens[i]);
-            }
-            sb.append(" ");
-        }
-
-        return sb.toString();
-    }*//*
+//    public String getAt(String st, int pos) {
+//        StringBuilder sb = new StringBuilder();
+//        String[] tokens = st.split(" ");
+//
+//        int pre = 10;
+//        int post = 10;
+//        if (pos < pre) {
+//            pre = pos;
+//            post = post + 10 - pos;
+//        }
+//        if (pos > tokens.length - post) {
+//            post = tokens.length - post - 1;
+//            pre = pre + (10 - post);
+//        }
+//
+//        for (int i = pos - pre; i < pos + post; i++) {
+//            if (lemmaFinder.collectLemmas(tokens[i]).size() > 0 &&
+//                    queryLemmas.contains(lemmaFinder.collectLemmas(tokens[i]).keySet().stream().findFirst().orElse(""))) {
+//                sb.append("<b>").append(tokens[i]).append("</b>");
+//            } else {
+//                sb.append(tokens[i]);
+//            }
+//            sb.append(" ");
+//        }
+//
+//        return sb.toString();
+//    }
 
 }
-*/

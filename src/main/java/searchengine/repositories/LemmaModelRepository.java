@@ -15,7 +15,7 @@ public interface LemmaModelRepository extends JpaRepository<LemmaModel, Integer>
 
 //    List<LemmaModel> findAllByLemmaId(int lemmaId);
 //
-//    List<LemmaModel> findAllByLemma(String lemma);
+   // List<LemmaModel> findAllByLemma(String lemma);
 
   //  LemmaModel findByLemmaAndSiteModelBySiteId();
 
