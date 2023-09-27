@@ -14,13 +14,13 @@ import java.util.List;
 @Repository
 public interface IndexModelRepository extends JpaRepository<IndexModel, Integer> {
 
-    List<IndexModel> findByPageModelByPageId(PageModel pageModel);
+  //  List<IndexModel> findByPageModelByPageId(PageModel pageModel);
 //
-    List<IndexModel> findAllByLemmaModelByLemmaId(LemmaModel lemmaModel);
+   // List<IndexModel> findAllByLemmaModelByLemmaId(LemmaModel lemmaModel);
 
-    List<IndexModel> findAllBylemmaModelBylemmaAndPageModelId(String lemma, PageModel pageModel);
+    //List<IndexModel> findAllBylemmaModelBylemmaAndPageModelId(String lemma, PageModel pageModel);
 
-    List<IndexModel> findAllByLemmaModelBylemma(String lemma);
+   // List<IndexModel> findAllByIndexModelBylemma(String lemma);
     //@Query("select i from IndexT i join PageT  p on p.pageId = i.pageId where i.lemmaTByLemmaId = ?1 and p.siteTBySiteId = ?2")
 //    List<IndexModel> findAllByLemmaModelByLemmaIdAndSiteId(LemmaModel lemmaT, SiteModel siteT);
 

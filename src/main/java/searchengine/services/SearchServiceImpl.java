@@ -1,3 +1,4 @@
+/*
 package searchengine.services;
 
 import lombok.RequiredArgsConstructor;
@@ -110,6 +111,7 @@ public class SearchServiceImpl implements SearchService {
 
         return new LemmaModel();
         }
+*/
 /*    public String getAt(String st, int pos) {
         StringBuilder sb = new StringBuilder();
         String[] tokens = st.split(" ");
@@ -136,5 +138,7 @@ public class SearchServiceImpl implements SearchService {
         }
 
         return sb.toString();
-    }*/
+    }*//*
+
 }
+*/

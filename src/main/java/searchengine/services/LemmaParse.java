@@ -3,6 +3,7 @@ package searchengine.services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import searchengine.config.Site;
 import searchengine.model.*;
@@ -31,9 +32,72 @@ public class LemmaParse {
                 this.indexModelRepository);
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public void parsePage(SiteModel siteModel, PageModel pageModel, String htmlPage) {
         try {
+            //  StringBuilder builder = new StringBuilder();
+            LemmaFinder lemmaFinder = LemmaFinder.getInstance();
+            Map<String, Integer> lemmas = lemmaFinder.collectLemmas(htmlPage);
+            Set<LemmaModel> setLemmaModel = new HashSet<>();
+            Set<IndexModel> setIndexModel = new HashSet<>();
+            for (Map.Entry<String, Integer> entry : lemmas.entrySet()){
+                LemmaModel lemmaModel = new LemmaModel();
+                IndexModel indexModel = new IndexModel();
+                System.out.println("1 - " + entry.getKey());
+
+                // builder.append(entry.getKey());
+                if (lemmaModelRepository.existsByLemmaAndSiteModelId(entry.getKey(), siteModel)){
+                    LemmaModel lemmaModelRep = lemmaModelRepository.findByLemmaAndSiteModelId(entry.getKey(), siteModel);
+                    lemmaModelRep.setFrequency(lemmaModelRep.getFrequency() + 1);
+                    setLemmaModel.add(lemmaModelRep);
+                    indexModel.setLemmaModelId(lemmaModelRep);
+
+                    System.out.println("lol");
+
+                    System.out.println("2 - " + entry.getKey());
+                }else {
+                    System.out.println("3 - " + entry.getKey());
+
+                    lemmaModel.setLemma(entry.getKey());
+                    lemmaModel.setFrequency(1);
+                    lemmaModel.setSiteModelId(siteModel);
+                    setLemmaModel.add(lemmaModel);
+
+                    indexModel.setLemmaModelId(lemmaModel);
+                }
+
+                indexModel.setPageModelId(pageModel);
+                indexModel.setRank(entry.getValue());
+                setIndexModel.add(indexModel);
+
+            }
+            lemmaModelRepository.saveAllAndFlush(setLemmaModel);
+            indexModelRepository.saveAllAndFlush(setIndexModel);
+
+        } catch (Exception e) {
+            System.out.println("Ошибка - parsePage" + pageModel.getPath() );
+
+            e.printStackTrace();
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*        try {
             System.out.println("Зашёл в ParsePage - " + Thread.currentThread().getName() + " ************************** ");
             //  StringBuilder builder = new StringBuilder();
             LemmaFinder lemmaFinder = LemmaFinder.getInstance();
@@ -74,7 +138,7 @@ public class LemmaParse {
             System.out.println("Ошибка - parsePage" + pageModel.getPath());
 
             e.printStackTrace();
-        }
+        }*/
     }
 
 //    public LemmaModel parseLemma(String lemmaText) {
@@ -103,7 +167,8 @@ public class LemmaParse {
 //            List<IndexModel> listIndexModel = new Vector<>();
 //            Set<LemmaModel> setLemmaModel = new Vector<LemmaModel>();
 //            Set<IndexModel> setIndexModel = new HashSet<>();
-/*            for (Map.Entry<String, Integer> entry : lemmas.entrySet()) {
+/*
+            for (Map.Entry<String, Integer> entry : lemmas.entrySet()) {
                 LemmaModel lemmaModel = new LemmaModel();
                 IndexModel indexModel = new IndexModel();
 
@@ -148,7 +213,8 @@ public class LemmaParse {
                 indexModel.setPageModelId(pageModel);
                 indexModel.setRank(entry.getValue());
                 indexModelRepository.saveAndFlush(indexModel);
-            }*/
+            }
+*/
 
             //   lemmaModelRepository.saveAllAndFlush(listLemmaModel);
             //   indexModelRepository.saveAllAndFlush(listIndexModel);
@@ -158,51 +224,7 @@ public class LemmaParse {
 
 
 
-/*       try {
-        //  StringBuilder builder = new StringBuilder();
-        LemmaFinder lemmaFinder = LemmaFinder.getInstance();
-        Map<String, Integer> lemmas = lemmaFinder.collectLemmas(htmlPage);
-        Set<LemmaModel> setLemmaModel = new HashSet<>();
-        Set<IndexModel> setIndexModel = new HashSet<>();
-        for (Map.Entry<String, Integer> entry : lemmas.entrySet()){
-            LemmaModel lemmaModel = new LemmaModel();
-            IndexModel indexModel = new IndexModel();
-            System.out.println("1 - " + entry.getKey());
 
-            // builder.append(entry.getKey());
-            if (lemmaModelRepository.existByLemmaAndSiteModelId(entry.getKey(), siteModel)){
-                LemmaModel lemmaModelRep = lemmaModelRepository.findByLemmaAndSiteModelId(entry.getKey(), siteModel);
-                lemmaModelRep.setFrequency(lemmaModelRep.getFrequency() + 1);
-                setLemmaModel.add(lemmaModelRep);
-                indexModel.setLemmaModelId(lemmaModelRep);
-
-                System.out.println("lol");
-
-                System.out.println("2 - " + entry.getKey());
-            }else {
-                System.out.println("3 - " + entry.getKey());
-
-                lemmaModel.setLemma(entry.getKey());
-                lemmaModel.setFrequency(1);
-                lemmaModel.setSiteModelId(siteModel);
-                setLemmaModel.add(lemmaModel);
-
-                indexModel.setLemmaModelId(lemmaModel);
-            }
-
-            indexModel.setPageModelId(pageModel);
-            indexModel.setRank(entry.getValue());
-            setIndexModel.add(indexModel);
-
-        }
-        lemmaModelRepository.saveAllAndFlush(setLemmaModel);
-        indexModelRepository.saveAllAndFlush(setIndexModel);
-
-    } catch (Exception e) {
-        System.out.println("Ошибка - parsePage" + pageModel.getPath() );
-
-        e.printStackTrace();
-    }*/
 
 
 //    public LemmaModel parseLemma(String lemmaText) {
