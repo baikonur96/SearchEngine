@@ -2,6 +2,7 @@ package searchengine.services;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import searchengine.dto.search.SearchData;
 import searchengine.dto.search.SearchResponse;
 import searchengine.model.IndexModel;
 import searchengine.model.LemmaModel;
@@ -12,7 +13,6 @@ import searchengine.repositories.LemmaModelRepository;
 import searchengine.repositories.PageModelRepository;
 import searchengine.repositories.SiteModelRepository;
 
-import java.io.IOException;
 import java.util.*;
 
 
@@ -49,21 +49,35 @@ public class SearchServiceImpl implements SearchService {
 
             }
             listLemmaModelInDb.sort(Comparator.comparing(LemmaModel::getFrequency));
-            listIndexModelInDb.addAll(indexModelRepository.findAllByLemmaId(listLemmaModelInDb.get(0)));
+            listIndexModelInDb.addAll(indexModelRepository.findAllByLemmaModelId(listLemmaModelInDb.get(0)));
             for (int i = 1; i < listLemmaModelInDb.size(); i++){
-                List<IndexModel> otherListIndexModel = indexModelRepository.findAllByLemmaId(listLemmaModelInDb.get(i));
+                List<IndexModel> otherListIndexModel = indexModelRepository.findAllByLemmaModelId(listLemmaModelInDb.get(i));
                 otherListIndexModel.forEach(model -> {
                     if (!listLemmaModelInDb.contains(model)){
                         listIndexModelInDb.remove(model);
                     }
                 });
             }
-            Set<PageModel> pageModelSet = new LinkedHashSet<>();
+            Map<PageModel, List<IndexModel>> outMap = new LinkedHashMap<>();
+            //Set<PageModel> pageModelSet = new LinkedHashSet<>();
             for (int y = 0; y < listIndexModelInDb.size(); y++){
+
                 PageModel pageModel = pageModelRepository.findById(listIndexModelInDb.get(y).getPageModelId());
-                pageModelSet.add(pageModelRepository.findById(listPageModelinDB.get(y)));
 
+                if (outMap.containsKey(pageModel)){
+                    outMap.get(pageModel).add(listIndexModelInDb.get(y));
+                }
+                else {
+                    List<IndexModel> listForMap = new ArrayList<>();
+                    listForMap.add(listIndexModelInDb.get(y));
+                    outMap.put(pageModel, listForMap);
+                }
+               // pageModelSet.add(pageModelRepository.findById(listPageModelinDB.get(y)));
+            }
 
+            for (Map.Entry<PageModel, List<IndexModel>> entry : outMap.entrySet()){
+                SearchData searchData = new SearchData()
+                //Нужно заполнить SearchData и SearchResponse
             }
 
 
