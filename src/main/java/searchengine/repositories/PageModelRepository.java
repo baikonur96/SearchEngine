@@ -21,8 +21,8 @@ public interface PageModelRepository extends JpaRepository<PageModel, Integer>
 
     @Transactional
     PageModel findByPathAndSiteModelId(String path, SiteModel siteModel);
-    @Transactional
-    PageModel findById(PageModel pageModel);
+//    @Transactional
+//    PageModel findById(Integer id);
 //
 //    int countBySiteModelBySiteId(SiteModel siteModel);
 //

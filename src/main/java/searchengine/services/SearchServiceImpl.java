@@ -36,10 +36,12 @@ public class SearchServiceImpl implements SearchService {
             List<PageModel> listPageModelinDB = new ArrayList<>();
             List<LemmaModel> listLemmaModelInDb = new ArrayList<>();
             List<IndexModel> listIndexModelInDb = new ArrayList<>();
+            System.out.println("**************************");
             for (Map.Entry<String, Integer> entry : lemmas.entrySet()) {
-                if (site == null) {
+                if (site == null) { //Сайт не указан
                     // Надо передать методу который разберёт лист и передаст объект с наименьшим frequency
                     // Если нет сайта
+                    System.out.println(entry.getKey());
                     List<LemmaModel> listRepLemma = lemmaModelRepository.findAllByLemma(entry.getKey());
                     listRepLemma.sort(Comparator.comparing(LemmaModel::getFrequency));
                     listLemmaModelInDb.add(listRepLemma.get(0));
@@ -62,7 +64,7 @@ public class SearchServiceImpl implements SearchService {
             //Set<PageModel> pageModelSet = new LinkedHashSet<>();
             for (int y = 0; y < listIndexModelInDb.size(); y++){
 
-                PageModel pageModel = pageModelRepository.findById(listIndexModelInDb.get(y).getPageModelId());
+                Optional<PageModel> pageModel = pageModelRepository.findById(listIndexModelInDb.get(y).getPageModelId().getId());
 
                 if (outMap.containsKey(pageModel)){
                     outMap.get(pageModel).add(listIndexModelInDb.get(y));
@@ -70,16 +72,32 @@ public class SearchServiceImpl implements SearchService {
                 else {
                     List<IndexModel> listForMap = new ArrayList<>();
                     listForMap.add(listIndexModelInDb.get(y));
-                    outMap.put(pageModel, listForMap);
+                    outMap.put(pageModel.get(), listForMap);
                 }
                // pageModelSet.add(pageModelRepository.findById(listPageModelinDB.get(y)));
             }
-
+            List<SearchData> listSearchData = new ArrayList<>();
             for (Map.Entry<PageModel, List<IndexModel>> entry : outMap.entrySet()){
-                SearchData searchData = new SearchData()
+
+                SearchData searchData = new SearchData();
+                searchData.setSite(entry.getKey().getSiteModelId().getUrl());
+                searchData.setSiteName(entry.getKey().getSiteModelId().getName());
+                searchData.setTitle("title");
+                searchData.setSnippet("snippet");
+                searchData.setRelevance(0.999);
+                listSearchData.add(searchData);
                 //Нужно заполнить SearchData и SearchResponse
             }
+            searchResponse.setResult(true);
+            searchResponse.setCount(outMap.size());
+            searchResponse.setData(listSearchData);
 
+        } catch (Exception e) {
+            e.printStackTrace();
+            searchResponse.setResult(false);
+        }
+        return searchResponse;
+    }
 
 
 
@@ -141,12 +159,7 @@ public class SearchServiceImpl implements SearchService {
 //            logger.log(Level.forName("DIAG", 350), "query = \t" + query);
 //            searchResponse.setResult(true);
 //            searchResponse.setCount(set.size());
-        } catch (Exception e) {
-            e.printStackTrace();
-            searchResponse.setResult(false);
-        }
-        return searchResponse;
-    }
+
 
 
         public LemmaModel getLeastFrequency(List<LemmaModel> listLemmaModel) {

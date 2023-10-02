@@ -7,7 +7,7 @@ spring.datasource.url: jdbc:mysql://localhost:3306/search_engine?useSSL=false&re
 spring.datasource.username: root
 spring.datasource.password: jcnhjdtw22
 spring.jpa.hibernate.dialect: org.hibernate.dialect.MySQL8Dialect
-spring.jpa.hibernate.ddl-auto: create
+spring.jpa.hibernate.ddl-auto: update
 
 spring.jpa.hibernate.globally_quoted_identifiers: create
 
@@ -15,10 +15,10 @@ indexing-settings:
   sites:
     - url: https://www.lenta.ru
       name: Лента.ру
-    - url: https://www.playback.ru
-      name: PlayBack.Ru
-    - url: https://www.skillbox.ru
-      name: Skillbox
+   # - url: https://www.playback.ru
+    #  name: PlayBack.Ru
+   # - url: https://www.skillbox.ru
+    #  name: Skillbox
 
 parse-settings:
   useragent: Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) YandexIndexingMach
