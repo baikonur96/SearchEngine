@@ -23,6 +23,9 @@ public interface LemmaModelRepository extends JpaRepository<LemmaModel, Integer>
     void deleteAllBySiteModelId(SiteModel siteModel);
 
     @Transactional
+    boolean existsByLemma(String lemma);
+
+    @Transactional
     boolean existsByLemmaAndSiteModelId(String lemma, SiteModel siteModel);
 
     @Transactional

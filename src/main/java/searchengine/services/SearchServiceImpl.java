@@ -31,61 +31,83 @@ public class SearchServiceImpl implements SearchService {
         SearchResponse searchResponse = new SearchResponse();
         queryLemmas = new ArrayList<>();
         try {
-            SiteModel searchSite = siteModelRepository.findByUrl(site);
+
+            SiteModel searchSite = existUpdateSite(site);
+
             Map<String, Integer> lemmas = LemmaFinder.getInstance().collectLemmas(query);
             List<PageModel> listPageModelinDB = new ArrayList<>();
             List<LemmaModel> listLemmaModelInDb = new ArrayList<>();
             List<IndexModel> listIndexModelInDb = new ArrayList<>();
-            System.out.println("**************************");
             for (Map.Entry<String, Integer> entry : lemmas.entrySet()) {
-                if (site == null) { //Сайт не указан
-                    // Надо передать методу который разберёт лист и передаст объект с наименьшим frequency
-                    // Если нет сайта
-                    System.out.println(entry.getKey());
+                //Сайт не указан
+                // Надо передать методу который разберёт лист и передаст объект с наименьшим frequency
+                // Если нет сайта
+                System.out.println(entry.getKey());
+                if (site == null && lemmaModelRepository.existsByLemma(entry.getKey())) {
                     List<LemmaModel> listRepLemma = lemmaModelRepository.findAllByLemma(entry.getKey());
                     listRepLemma.sort(Comparator.comparing(LemmaModel::getFrequency));
+/*                    for (int z = 0; z < listRepLemma.size(); z++){
+                        System.out.println(listRepLemma.get(z).getLemma() + " - " + listRepLemma.get(z).getFrequency());
+                    }*/
                     listLemmaModelInDb.add(listRepLemma.get(0));
-                } else {
-                    listLemmaModelInDb.add(lemmaModelRepository.findByLemmaAndSiteModelId(entry.getKey(), searchSite));
+                } else if (lemmaModelRepository.existsByLemmaAndSiteModelId(entry.getKey(), searchSite)) {
+                    System.out.println("----------------------");
+                    LemmaModel lemmaModel = lemmaModelRepository.findByLemmaAndSiteModelId(entry.getKey(), searchSite);
+                    listLemmaModelInDb.add(lemmaModel);
+                }else{
+                    continue;
                 }
 
             }
+            if (listLemmaModelInDb.isEmpty()) {
+                searchResponse.setResult(false);
+                return searchResponse;
+            }
+                                for (int z = 0; z < listLemmaModelInDb.size(); z++){
+                        System.out.println(listLemmaModelInDb.get(z).getLemma() + " - " + listLemmaModelInDb.get(z).getFrequency());
+                    }
             listLemmaModelInDb.sort(Comparator.comparing(LemmaModel::getFrequency));
+            for (int z = 0; z < listLemmaModelInDb.size(); z++){
+                System.out.println(listLemmaModelInDb.get(z).getLemma() + " - " + listLemmaModelInDb.get(z).getFrequency());
+            }
+
+
             listIndexModelInDb.addAll(indexModelRepository.findAllByLemmaModelId(listLemmaModelInDb.get(0)));
-            for (int i = 1; i < listLemmaModelInDb.size(); i++){
+            for (int i = 1; i < listLemmaModelInDb.size(); i++) {
                 List<IndexModel> otherListIndexModel = indexModelRepository.findAllByLemmaModelId(listLemmaModelInDb.get(i));
                 otherListIndexModel.forEach(model -> {
-                    if (!listLemmaModelInDb.contains(model)){
+                    if (!listLemmaModelInDb.contains(model)) {
                         listIndexModelInDb.remove(model);
                     }
                 });
             }
             Map<PageModel, List<IndexModel>> outMap = new LinkedHashMap<>();
             //Set<PageModel> pageModelSet = new LinkedHashSet<>();
-            for (int y = 0; y < listIndexModelInDb.size(); y++){
+            for (int y = 0; y < listIndexModelInDb.size(); y++) {
 
                 Optional<PageModel> pageModel = pageModelRepository.findById(listIndexModelInDb.get(y).getPageModelId().getId());
 
-                if (outMap.containsKey(pageModel)){
+                if (outMap.containsKey(pageModel)) {
                     outMap.get(pageModel).add(listIndexModelInDb.get(y));
-                }
-                else {
+                } else {
                     List<IndexModel> listForMap = new ArrayList<>();
                     listForMap.add(listIndexModelInDb.get(y));
                     outMap.put(pageModel.get(), listForMap);
                 }
-               // pageModelSet.add(pageModelRepository.findById(listPageModelinDB.get(y)));
+                // pageModelSet.add(pageModelRepository.findById(listPageModelinDB.get(y)));
             }
             List<SearchData> listSearchData = new ArrayList<>();
-            for (Map.Entry<PageModel, List<IndexModel>> entry : outMap.entrySet()){
+            for (Map.Entry<PageModel, List<IndexModel>> entry : outMap.entrySet()) {
 
                 SearchData searchData = new SearchData();
                 searchData.setSite(entry.getKey().getSiteModelId().getUrl());
+                searchData.setUri(entry.getKey().getPath().replace(entry.getKey().getSiteModelId().getUrl(), ""));
                 searchData.setSiteName(entry.getKey().getSiteModelId().getName());
                 searchData.setTitle("title");
                 searchData.setSnippet("snippet");
                 searchData.setRelevance(0.999);
                 listSearchData.add(searchData);
+                System.out.println(entry.getKey().getSiteModelId().getUrl() + " - " + entry.getKey().getPath());
                 //Нужно заполнить SearchData и SearchResponse
             }
             searchResponse.setResult(true);
@@ -99,14 +121,27 @@ public class SearchServiceImpl implements SearchService {
         return searchResponse;
     }
 
+    public String UpdateUrl(String url){
+//        if (url.endsWith("/")){
+//            return new String(url.substring(0, url.length() - 1));
+//        }
+        if (url.contains("www."))
+        {
+            return new String(url.substring(0, 8) + url.substring(12));
+        }
+        return url;
+    }
+
+    public SiteModel existUpdateSite(String site){
+        if (!(site == null)){
+            SiteModel searchSite = siteModelRepository.findByUrl(UpdateUrl(site));
+            return searchSite;
+        }
+        return null;
+    }
 
 
-
-
-
-              //  lemmaModelRepository.findByLemmaAndSiteModelId(entry.getKey(), );
-
-
+    //  lemmaModelRepository.findByLemmaAndSiteModelId(entry.getKey(), );
 
 
 //            lemmas.keySet().forEach(lem -> {
@@ -161,12 +196,11 @@ public class SearchServiceImpl implements SearchService {
 //            searchResponse.setCount(set.size());
 
 
-
-        public LemmaModel getLeastFrequency(List<LemmaModel> listLemmaModel) {
+    public LemmaModel getLeastFrequency(List<LemmaModel> listLemmaModel) {
 
 
         return new LemmaModel();
-        }
+    }
 //    public String getAt(String st, int pos) {
 //        StringBuilder sb = new StringBuilder();
 //        String[] tokens = st.split(" ");
