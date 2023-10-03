@@ -35,7 +35,7 @@ public class SearchServiceImpl implements SearchService {
             SiteModel searchSite = existUpdateSite(site);
 
             Map<String, Integer> lemmas = LemmaFinder.getInstance().collectLemmas(query);
-            List<PageModel> listPageModelinDB = new ArrayList<>();
+            Set<PageModel> setPageModelinDB = new LinkedHashSet<>();
             List<LemmaModel> listLemmaModelInDb = new ArrayList<>();
             List<IndexModel> listIndexModelInDb = new ArrayList<>();
             for (Map.Entry<String, Integer> entry : lemmas.entrySet()) {
@@ -72,15 +72,31 @@ public class SearchServiceImpl implements SearchService {
             }
 
 
-            listIndexModelInDb.addAll(indexModelRepository.findAllByLemmaModelId(listLemmaModelInDb.get(0)));
+            listIndexModelInDb.addAll(indexModelRepository.findAllByLemmaModelId(listLemmaModelInDb.get(0))); //Берём первую самую редку лемму
+            listIndexModelInDb.forEach(indexModel -> {
+                setPageModelinDB.add(indexModel.getPageModelId());
+            });
+
+/*            for (int i = 0; i <setPageModelinDB.size(); i++){
+
+
+            }*/
+            //Добавляем остальные
+            listIndexModelInDb.clear();
             for (int i = 1; i < listLemmaModelInDb.size(); i++) {
                 List<IndexModel> otherListIndexModel = indexModelRepository.findAllByLemmaModelId(listLemmaModelInDb.get(i));
-                otherListIndexModel.forEach(model -> {
-                    if (!listLemmaModelInDb.contains(model)) {
-                        listIndexModelInDb.remove(model);
-                    }
-                });
+                listIndexModelInDb.addAll(otherListIndexModel);
             }
+
+            for (int j = 0; j < listIndexModelInDb.size(); j++){
+                for (PageModel pageModel : setPageModelinDB){
+                    if (!pageModel.equals(listIndexModelInDb.get(j).getPageModelId())) {
+                        setPageModelinDB.remove(pageModel);
+                    }
+                }
+            }
+
+
             Map<PageModel, List<IndexModel>> outMap = new LinkedHashMap<>();
             //Set<PageModel> pageModelSet = new LinkedHashSet<>();
             for (int y = 0; y < listIndexModelInDb.size(); y++) {
@@ -94,7 +110,7 @@ public class SearchServiceImpl implements SearchService {
                     listForMap.add(listIndexModelInDb.get(y));
                     outMap.put(pageModel.get(), listForMap);
                 }
-                // pageModelSet.add(pageModelRepository.findById(listPageModelinDB.get(y)));
+                // pageModelSet.add(pageModelRepository.findById(setPageModelinDB.get(y)));
             }
             List<SearchData> listSearchData = new ArrayList<>();
             for (Map.Entry<PageModel, List<IndexModel>> entry : outMap.entrySet()) {
