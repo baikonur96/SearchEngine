@@ -15,6 +15,7 @@ import searchengine.repositories.PageModelRepository;
 import searchengine.repositories.SiteModelRepository;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -109,13 +110,13 @@ public class SearchServiceImpl implements SearchService {
 
 
 
-            setPageModelinDB.forEach(pageModel -> {
-                System.out.println(pageModel.getPath() + " -  Нужные сайты");
-            });
+//            setPageModelinDB.forEach(pageModel -> {
+//                System.out.println(pageModel.getPath() + " -  Нужные сайты");
+//            });
 
-            for (Map.Entry<LemmaModel, List<IndexModel>> entry : mapLemmaIndexs.entrySet()) {
-                System.out.println(entry.getKey().getLemma() + " - " + entry.getValue().get(0).getPageModelId().getPath());
-            }
+//            for (Map.Entry<LemmaModel, List<IndexModel>> entry : mapLemmaIndexs.entrySet()) {
+//                System.out.println(entry.getKey().getLemma() + " - " + entry.getValue().get(0).getPageModelId().getPath());
+//            }
 
 
             //Берём первую самую редку лемму
@@ -161,23 +162,38 @@ public class SearchServiceImpl implements SearchService {
 
 
             List<SearchData> listSearchData = new ArrayList<>();
-            for (PageModel pageModel : setPageModelinDB){
+            Map<PageModel, Float>  outMap = new LinkedHashMap<>();
+            for (PageModel pageModel : setPageModelinDB) {
                 Set<IndexModel> setIndexForPage = new LinkedHashSet<>();
-                for (Map.Entry<LemmaModel, List<IndexModel>> entry : mapLemmaIndexs.entrySet()){
+                for (Map.Entry<LemmaModel, List<IndexModel>> entry : mapLemmaIndexs.entrySet()) {
                     entry.getValue().forEach(indexModel -> {
-                        if (indexModel.getPageModelId().equals(pageModel)){
+                        if (indexModel.getPageModelId().equals(pageModel)) {
                             setIndexForPage.add(indexModel);
                         }
                     });
                 }
+                float relAbsPage = 0;
+                for (IndexModel index : setIndexForPage) {
+                    relAbsPage = relAbsPage + index.getRank();
+                }
+                outMap.put(pageModel, relAbsPage);
+            }
 
+            outMap.entrySet().stream().sorted(Map.Entry.<PageModel, Float>comparingByValue().reversed()).forEach(System.out::println);
+//                    collect(Collectors
+//                            .toMap(Map.Entry::getKey,
+//                                    Map.Entry::getValue,
+//                                    (e1, e2) -> e1,
+//                                    LinkedHashMap::new));
+            for (Map.Entry<PageModel, Float> entry : outMap.entrySet()) {
+                System.out.println(entry.getKey().getPath() + " - " + entry.getValue());
                 SearchData searchData = new SearchData();
-                searchData.setSite(pageModel.getSiteModelId().getUrl());
-                searchData.setUri(pageModel.getPath().replace(pageModel.getSiteModelId().getUrl(), ""));
-                searchData.setSiteName(pageModel.getSiteModelId().getName());
-                searchData.setTitle("title");
+                searchData.setSite(entry.getKey().getSiteModelId().getUrl());
+                searchData.setUri(entry.getKey().getPath().replace(entry.getKey().getSiteModelId().getUrl(), ""));
+                searchData.setSiteName(entry.getKey().getSiteModelId().getName());
+                searchData.setTitle(entry.getKey().getPath());
                 searchData.setSnippet("snippet");
-                searchData.setRelevance(0.999);
+                searchData.setRelevance(entry.getValue());
                 listSearchData.add(searchData);
 
             }
