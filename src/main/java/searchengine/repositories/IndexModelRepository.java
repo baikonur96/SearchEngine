@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import searchengine.model.IndexModel;
 import searchengine.model.LemmaModel;
+import searchengine.model.PageModel;
 
 import java.util.List;
 
@@ -15,6 +16,8 @@ public interface IndexModelRepository extends JpaRepository<IndexModel, Integer>
 //
     @Transactional
     List<IndexModel> findAllByLemmaModelId(LemmaModel lemmaModel);
+    @Transactional
+    List<IndexModel> findAllByLemmaModelIdAndPageModelId(LemmaModel lemmaModel, PageModel pageModel);
 
     //List<IndexModel> findAllBylemmaModelBylemmaAndPageModelId(String lemma, PageModel pageModel);
 

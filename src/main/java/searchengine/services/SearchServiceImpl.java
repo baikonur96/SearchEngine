@@ -1,6 +1,7 @@
 package searchengine.services;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import searchengine.dto.search.SearchData;
 import searchengine.dto.search.SearchResponse;
@@ -36,8 +37,10 @@ public class SearchServiceImpl implements SearchService {
 
             Map<String, Integer> lemmas = LemmaFinder.getInstance().collectLemmas(query);
             Set<PageModel> setPageModelinDB = new LinkedHashSet<>();
+            Map<PageModel, List<IndexModel>> mapPageIndexlinDB = new LinkedHashMap<>();
             List<LemmaModel> listLemmaModelInDb = new ArrayList<>();
             List<IndexModel> listIndexModelInDb = new ArrayList<>();
+            Map<LemmaModel, List<IndexModel>> mapLemmaIndexs = new LinkedHashMap<>();
             for (Map.Entry<String, Integer> entry : lemmas.entrySet()) {
                 //Сайт не указан
                 // Надо передать методу который разберёт лист и передаст объект с наименьшим frequency
@@ -54,7 +57,7 @@ public class SearchServiceImpl implements SearchService {
                     System.out.println("----------------------");
                     LemmaModel lemmaModel = lemmaModelRepository.findByLemmaAndSiteModelId(entry.getKey(), searchSite);
                     listLemmaModelInDb.add(lemmaModel);
-                }else{
+                } else {
                     continue;
                 }
 
@@ -63,41 +66,84 @@ public class SearchServiceImpl implements SearchService {
                 searchResponse.setResult(false);
                 return searchResponse;
             }
-                                for (int z = 0; z < listLemmaModelInDb.size(); z++){
-                        System.out.println(listLemmaModelInDb.get(z).getLemma() + " - " + listLemmaModelInDb.get(z).getFrequency());
-                    }
+            for (int z = 0; z < listLemmaModelInDb.size(); z++) {
+                System.out.println(listLemmaModelInDb.get(z).getLemma() + " - " + listLemmaModelInDb.get(z).getFrequency());
+            }
             listLemmaModelInDb.sort(Comparator.comparing(LemmaModel::getFrequency));
-            for (int z = 0; z < listLemmaModelInDb.size(); z++){
+            for (int z = 0; z < listLemmaModelInDb.size(); z++) {
                 System.out.println(listLemmaModelInDb.get(z).getLemma() + " - " + listLemmaModelInDb.get(z).getFrequency());
             }
 
+//Делаем ответ без привязки к сайту
+//            for (int i = 1; i < listLemmaModelInDb.size(); i++) {
+//                listIndexModelInDb.addAll(indexModelRepository.findAllByLemmaModelId(listLemmaModelInDb.get(0)));
+//
+//            }
 
-            listIndexModelInDb.addAll(indexModelRepository.findAllByLemmaModelId(listLemmaModelInDb.get(0))); //Берём первую самую редку лемму
+            listIndexModelInDb.addAll(indexModelRepository.findAllByLemmaModelId(listLemmaModelInDb.get(0)));
+//Берём первую самую редку лемму
             listIndexModelInDb.forEach(indexModel -> {
                 setPageModelinDB.add(indexModel.getPageModelId());
             });
+
+
+            for (int i = 0; i < listLemmaModelInDb.size(); i++) {
+                List<PageModel> removeList = new ArrayList<>();
+                for (PageModel model : setPageModelinDB) {
+                    List<IndexModel> otherList = indexModelRepository.findAllByLemmaModelIdAndPageModelId(listLemmaModelInDb.get(i), model);
+                    if (otherList.isEmpty()) {
+//                            if (outMap.containsKey(model)){
+//                                outMap.remove(model);
+//                            }
+                        removeList.add(model);
+                    } else {
+                        if (mapLemmaIndexs.containsKey(listLemmaModelInDb.get(i)))
+                            mapLemmaIndexs.get(listLemmaModelInDb.get(i)).addAll(otherList);
+                        else {
+                            mapLemmaIndexs.put(listLemmaModelInDb.get(i), otherList);
+                        }
+                    }
+                }
+                setPageModelinDB.removeAll(removeList);
+            }
+
+
+
+            setPageModelinDB.forEach(pageModel -> {
+                System.out.println(pageModel.getPath() + " -  Нужные сайты");
+            });
+
+            for (Map.Entry<LemmaModel, List<IndexModel>> entry : mapLemmaIndexs.entrySet()) {
+                System.out.println(entry.getKey().getLemma() + " - " + entry.getValue().get(0).getPageModelId().getPath());
+            }
+
+
+            //Берём первую самую редку лемму
+//            listIndexModelInDb.forEach(indexModel -> {
+//                setPageModelinDB.add(indexModel.getPageModelId());
+//            });
 
 /*            for (int i = 0; i <setPageModelinDB.size(); i++){
 
 
             }*/
             //Добавляем остальные
-            listIndexModelInDb.clear();
-            for (int i = 1; i < listLemmaModelInDb.size(); i++) {
-                List<IndexModel> otherListIndexModel = indexModelRepository.findAllByLemmaModelId(listLemmaModelInDb.get(i));
-                listIndexModelInDb.addAll(otherListIndexModel);
-            }
+//            listIndexModelInDb.clear();
+//            for (int i = 1; i < listLemmaModelInDb.size(); i++) {
+//                List<IndexModel> otherListIndexModel = indexModelRepository.findAllByLemmaModelId(listLemmaModelInDb.get(i));
+//                listIndexModelInDb.addAll(otherListIndexModel);
+//            }
+//
+//            for (int j = 0; j < listIndexModelInDb.size(); j++) {
+//                for (PageModel pageModel : setPageModelinDB) {
+//                    if (!pageModel.equals(listIndexModelInDb.get(j).getPageModelId())) {
+//                        setPageModelinDB.remove(pageModel);
+//                    }
+//                }
+//            }
 
-            for (int j = 0; j < listIndexModelInDb.size(); j++){
-                for (PageModel pageModel : setPageModelinDB){
-                    if (!pageModel.equals(listIndexModelInDb.get(j).getPageModelId())) {
-                        setPageModelinDB.remove(pageModel);
-                    }
-                }
-            }
+/*           Map<PageModel, List<IndexModel>> outMap = new LinkedHashMap<>();
 
-
-            Map<PageModel, List<IndexModel>> outMap = new LinkedHashMap<>();
             //Set<PageModel> pageModelSet = new LinkedHashSet<>();
             for (int y = 0; y < listIndexModelInDb.size(); y++) {
 
@@ -111,7 +157,36 @@ public class SearchServiceImpl implements SearchService {
                     outMap.put(pageModel.get(), listForMap);
                 }
                 // pageModelSet.add(pageModelRepository.findById(setPageModelinDB.get(y)));
+            }*/
+
+
+            List<SearchData> listSearchData = new ArrayList<>();
+            for (PageModel pageModel : setPageModelinDB){
+                Set<IndexModel> setIndexForPage = new LinkedHashSet<>();
+                for (Map.Entry<LemmaModel, List<IndexModel>> entry : mapLemmaIndexs.entrySet()){
+                    entry.getValue().forEach(indexModel -> {
+                        if (indexModel.getPageModelId().equals(pageModel)){
+                            setIndexForPage.add(indexModel);
+                        }
+                    });
+                }
+
+                SearchData searchData = new SearchData();
+                searchData.setSite(pageModel.getSiteModelId().getUrl());
+                searchData.setUri(pageModel.getPath().replace(pageModel.getSiteModelId().getUrl(), ""));
+                searchData.setSiteName(pageModel.getSiteModelId().getName());
+                searchData.setTitle("title");
+                searchData.setSnippet("snippet");
+                searchData.setRelevance(0.999);
+                listSearchData.add(searchData);
+
             }
+            searchResponse.setResult(true);
+            searchResponse.setCount(setPageModelinDB.size());
+            searchResponse.setData(listSearchData);
+
+
+/*            Map<PageModel, List<IndexModel>> outMap = new LinkedHashMap<>();
             List<SearchData> listSearchData = new ArrayList<>();
             for (Map.Entry<PageModel, List<IndexModel>> entry : outMap.entrySet()) {
 
@@ -128,7 +203,7 @@ public class SearchServiceImpl implements SearchService {
             }
             searchResponse.setResult(true);
             searchResponse.setCount(outMap.size());
-            searchResponse.setData(listSearchData);
+            searchResponse.setData(listSearchData);*/
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -137,23 +212,33 @@ public class SearchServiceImpl implements SearchService {
         return searchResponse;
     }
 
-    public String UpdateUrl(String url){
+    public String UpdateUrl(String url) {
 //        if (url.endsWith("/")){
 //            return new String(url.substring(0, url.length() - 1));
 //        }
-        if (url.contains("www."))
-        {
+        if (url.contains("www.")) {
             return new String(url.substring(0, 8) + url.substring(12));
         }
         return url;
     }
 
-    public SiteModel existUpdateSite(String site){
-        if (!(site == null)){
+    public SiteModel existUpdateSite(String site) {
+        if (!(site == null)) {
             SiteModel searchSite = siteModelRepository.findByUrl(UpdateUrl(site));
             return searchSite;
         }
         return null;
+    }
+
+    public double mathRelevan(Set<IndexModel> indexModelSet) {
+
+        for (IndexModel indexModel : indexModelSet){
+        }
+
+
+
+
+        return 0.0;
     }
 
 
