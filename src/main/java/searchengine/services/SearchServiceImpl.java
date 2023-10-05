@@ -67,13 +67,15 @@ public class SearchServiceImpl implements SearchService {
                 searchResponse.setResult(false);
                 return searchResponse;
             }
-            for (int z = 0; z < listLemmaModelInDb.size(); z++) {
-                System.out.println(listLemmaModelInDb.get(z).getLemma() + " - " + listLemmaModelInDb.get(z).getFrequency());
-            }
+
+//            for (int z = 0; z < listLemmaModelInDb.size(); z++) {
+//                System.out.println(listLemmaModelInDb.get(z).getLemma() + " - " + listLemmaModelInDb.get(z).getFrequency());
+//            }
+
             listLemmaModelInDb.sort(Comparator.comparing(LemmaModel::getFrequency));
-            for (int z = 0; z < listLemmaModelInDb.size(); z++) {
-                System.out.println(listLemmaModelInDb.get(z).getLemma() + " - " + listLemmaModelInDb.get(z).getFrequency());
-            }
+//            for (int z = 0; z < listLemmaModelInDb.size(); z++) {
+//                System.out.println(listLemmaModelInDb.get(z).getLemma() + " - " + listLemmaModelInDb.get(z).getFrequency());
+//            }
 
 //Делаем ответ без привязки к сайту
 //            for (int i = 1; i < listLemmaModelInDb.size(); i++) {
@@ -179,13 +181,20 @@ public class SearchServiceImpl implements SearchService {
                 outMap.put(pageModel, relAbsPage);
             }
 
-            outMap.entrySet().stream().sorted(Map.Entry.<PageModel, Float>comparingByValue().reversed()).forEach(System.out::println);
+            Map<PageModel, Float> resMap = outMap.entrySet().stream().sorted(Map.Entry.<PageModel, Float>comparingByValue().reversed()).
+                    collect(Collectors.toMap(
+                    Map.Entry::getKey,
+                    Map.Entry::getValue,
+                    (a, b) -> a,
+                    LinkedHashMap::new
+            ));
+                  //  forEach(System.out::println);
 //                    collect(Collectors
 //                            .toMap(Map.Entry::getKey,
 //                                    Map.Entry::getValue,
 //                                    (e1, e2) -> e1,
 //                                    LinkedHashMap::new));
-            for (Map.Entry<PageModel, Float> entry : outMap.entrySet()) {
+            for (Map.Entry<PageModel, Float> entry : resMap.entrySet()) {
                 System.out.println(entry.getKey().getPath() + " - " + entry.getValue());
                 SearchData searchData = new SearchData();
                 searchData.setSite(entry.getKey().getSiteModelId().getUrl());
