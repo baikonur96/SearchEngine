@@ -29,7 +29,7 @@ public class SearchServiceImpl implements SearchService {
 
 
     @Override
-    public SearchResponse search(String query, String site, Integer offset, Integer limit) {
+    public SearchResponse search(String query, String site, Integer offset, Integer limit) { //offset - сдвиг от первого результата, limit - количество выводимых страниц
         SearchResponse searchResponse = new SearchResponse();
         queryLemmas = new ArrayList<>();
         try {
@@ -47,12 +47,29 @@ public class SearchServiceImpl implements SearchService {
                 // Надо передать методу который разберёт лист и передаст объект с наименьшим frequency
                 // Если нет сайта
                 System.out.println(entry.getKey());
-                if (site == null && lemmaModelRepository.existsByLemma(entry.getKey())) {
+                if (searchSite == null) {
+                    if ( lemmaModelRepository.existsByLemma(entry.getKey())) {
+                        List<LemmaModel> listRepLemma = lemmaModelRepository.findAllByLemma(entry.getKey());
+                        listRepLemma.sort(Comparator.comparing(LemmaModel::getFrequency));
+                        listLemmaModelInDb.add(listRepLemma.get(0));
+                    }
+                    else {
+                        continue;
+                    }
+                } else if (lemmaModelRepository.existsByLemmaAndSiteModelId(entry.getKey(), searchSite)){
+                    LemmaModel lemmaModel = lemmaModelRepository.findByLemmaAndSiteModelId(entry.getKey(), searchSite);
+                    listLemmaModelInDb.add(lemmaModel);
+                }
+
+
+
+
+/*                if (site == null && lemmaModelRepository.existsByLemma(entry.getKey())) {
                     List<LemmaModel> listRepLemma = lemmaModelRepository.findAllByLemma(entry.getKey());
                     listRepLemma.sort(Comparator.comparing(LemmaModel::getFrequency));
-/*                    for (int z = 0; z < listRepLemma.size(); z++){
+*//*                    for (int z = 0; z < listRepLemma.size(); z++){
                         System.out.println(listRepLemma.get(z).getLemma() + " - " + listRepLemma.get(z).getFrequency());
-                    }*/
+                    }*//*
                     listLemmaModelInDb.add(listRepLemma.get(0));
                 } else if (lemmaModelRepository.existsByLemmaAndSiteModelId(entry.getKey(), searchSite)) {
                     System.out.println("----------------------");
@@ -60,11 +77,12 @@ public class SearchServiceImpl implements SearchService {
                     listLemmaModelInDb.add(lemmaModel);
                 } else {
                     continue;
-                }
+                }*/
 
             }
             if (listLemmaModelInDb.isEmpty()) {
                 searchResponse.setResult(false);
+                searchResponse.setError("Указанная страница не найдена");
                 return searchResponse;
             }
 
@@ -72,7 +90,7 @@ public class SearchServiceImpl implements SearchService {
 //                System.out.println(listLemmaModelInDb.get(z).getLemma() + " - " + listLemmaModelInDb.get(z).getFrequency());
 //            }
 
-            listLemmaModelInDb.sort(Comparator.comparing(LemmaModel::getFrequency));
+            listLemmaModelInDb.sort(Comparator.comparing(LemmaModel::getFrequency)); // Сформиров и отсортирован лист от наименьшеньго к наибольшему по frequency lemma
 //            for (int z = 0; z < listLemmaModelInDb.size(); z++) {
 //                System.out.println(listLemmaModelInDb.get(z).getLemma() + " - " + listLemmaModelInDb.get(z).getFrequency());
 //            }
@@ -236,6 +254,11 @@ public class SearchServiceImpl implements SearchService {
         }
         return searchResponse;
     }
+
+
+
+
+
 
     public String UpdateUrl(String url) {
 //        if (url.endsWith("/")){
