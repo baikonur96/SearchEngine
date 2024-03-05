@@ -7,8 +7,6 @@ import lombok.Setter;
 
 @Data
 @RequiredArgsConstructor
-@Getter
-@Setter
 public class SearchData {
     private String site;
     private String siteName;

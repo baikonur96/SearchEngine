@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import searchengine.dto.search.SearchData;
+import searchengine.dto.search.SearchObj;
 import searchengine.dto.search.SearchResponse;
 import searchengine.model.IndexModel;
 import searchengine.model.LemmaModel;
@@ -42,6 +43,7 @@ public class SearchServiceImpl implements SearchService {
             List<LemmaModel> listLemmaModelInDb = new ArrayList<>();
             List<IndexModel> listIndexModelInDb = new ArrayList<>();
             Map<LemmaModel, List<IndexModel>> mapLemmaIndexs = new LinkedHashMap<>();
+            Map<PageModel, List<IndexModel>> mapPageIndex = new LinkedHashMap<>();
             for (Map.Entry<String, Integer> entry : lemmas.entrySet()) {
                 //Сайт не указан
                 // Надо передать методу который разберёт лист и передаст объект с наименьшим frequency
@@ -86,99 +88,74 @@ public class SearchServiceImpl implements SearchService {
                 return searchResponse;
             }
 
-//            for (int z = 0; z < listLemmaModelInDb.size(); z++) {
-//                System.out.println(listLemmaModelInDb.get(z).getLemma() + " - " + listLemmaModelInDb.get(z).getFrequency());
-//            }
 
-            listLemmaModelInDb.sort(Comparator.comparing(LemmaModel::getFrequency)); // Сформиров и отсортирован лист от наименьшеньго к наибольшему по frequency lemma
-//            for (int z = 0; z < listLemmaModelInDb.size(); z++) {
-//                System.out.println(listLemmaModelInDb.get(z).getLemma() + " - " + listLemmaModelInDb.get(z).getFrequency());
-//            }
+            // Сформиров и отсортирован лист от наименьшеньго к наибольшему по frequency lemma
+            listLemmaModelInDb.sort(Comparator.comparing(LemmaModel::getFrequency));
 
-//Делаем ответ без привязки к сайту
-//            for (int i = 1; i < listLemmaModelInDb.size(); i++) {
-//                listIndexModelInDb.addAll(indexModelRepository.findAllByLemmaModelId(listLemmaModelInDb.get(0)));
-//
-//            }
 
             listIndexModelInDb.addAll(indexModelRepository.findAllByLemmaModelId(listLemmaModelInDb.get(0)));
-//Берём первую самую редку лемму
+            //Берём первую самую редку лемму
             listIndexModelInDb.forEach(indexModel -> {
+                //Формирование списка сайтов по самой лемме с наименьшей frequency
                 setPageModelinDB.add(indexModel.getPageModelId());
             });
+
+            //Удаляем первую лемму по котрой нашли индексы и страницы
+           // listLemmaModelInDb.remove(0);
 
 
             for (int i = 0; i < listLemmaModelInDb.size(); i++) {
                 List<PageModel> removeList = new ArrayList<>();
                 for (PageModel model : setPageModelinDB) {
+
                     List<IndexModel> otherList = indexModelRepository.findAllByLemmaModelIdAndPageModelId(listLemmaModelInDb.get(i), model);
+                    System.out.println("Size otherList: " + otherList.size());
                     if (otherList.isEmpty()) {
 //                            if (outMap.containsKey(model)){
 //                                outMap.remove(model);
 //                            }
                         removeList.add(model);
                     } else {
-                        if (mapLemmaIndexs.containsKey(listLemmaModelInDb.get(i)))
-                            mapLemmaIndexs.get(listLemmaModelInDb.get(i)).addAll(otherList);
+                        if (mapPageIndex.containsKey(model)) {
+                            mapPageIndex.get(model).addAll(otherList);
+                        }
                         else {
-                            mapLemmaIndexs.put(listLemmaModelInDb.get(i), otherList);
+                            //Данная мапа является ключевой в расчёте релевантности
+                            mapPageIndex.put(model, otherList);
                         }
                     }
                 }
                 setPageModelinDB.removeAll(removeList);
             }
+            System.out.println("SizeFinalMapPageIndex: " + mapPageIndex.size());
+            List<SearchObj> listObj = new ArrayList<>();
+            float maxAbsRel = 0;
+            Map<PageModel, Float> mapPageRel = new LinkedHashMap<>();
+            //Начало рассчёта релевантности
+            for (Map.Entry<PageModel, List<IndexModel>> entry : mapPageIndex.entrySet()){
+                float rankPage = 0;
+                    for (IndexModel indexModel : entry.getValue()){
+
+                        rankPage += indexModel.getRank();
 
 
 
-//            setPageModelinDB.forEach(pageModel -> {
-//                System.out.println(pageModel.getPath() + " -  Нужные сайты");
-//            });
-
-//            for (Map.Entry<LemmaModel, List<IndexModel>> entry : mapLemmaIndexs.entrySet()) {
-//                System.out.println(entry.getKey().getLemma() + " - " + entry.getValue().get(0).getPageModelId().getPath());
-//            }
-
-
-            //Берём первую самую редку лемму
-//            listIndexModelInDb.forEach(indexModel -> {
-//                setPageModelinDB.add(indexModel.getPageModelId());
-//            });
-
-/*            for (int i = 0; i <setPageModelinDB.size(); i++){
-
-
-            }*/
-            //Добавляем остальные
-//            listIndexModelInDb.clear();
-//            for (int i = 1; i < listLemmaModelInDb.size(); i++) {
-//                List<IndexModel> otherListIndexModel = indexModelRepository.findAllByLemmaModelId(listLemmaModelInDb.get(i));
-//                listIndexModelInDb.addAll(otherListIndexModel);
-//            }
+//                        if (indexModel.getRank() > maxAbsRel){
+//                            maxAbsRel = indexModel.getRank();
+//                        }
 //
-//            for (int j = 0; j < listIndexModelInDb.size(); j++) {
-//                for (PageModel pageModel : setPageModelinDB) {
-//                    if (!pageModel.equals(listIndexModelInDb.get(j).getPageModelId())) {
-//                        setPageModelinDB.remove(pageModel);
-//                    }
-//                }
-//            }
+                    }
+                    SearchObj searchObj = new SearchObj();
+                    searchObj.setPageModel(entry.getKey());
+                    searchObj.setListIndexModel(entry.getValue());
+                    searchObj.setAbsRel(rankPage);
+                    maxAbsRel = rankPage > maxAbsRel ? rankPage : maxAbsRel;
+//                    if (rankPage > maxAbsRel){
+//                            maxAbsRel = rankPage;
+//                        }
 
-/*           Map<PageModel, List<IndexModel>> outMap = new LinkedHashMap<>();
 
-            //Set<PageModel> pageModelSet = new LinkedHashSet<>();
-            for (int y = 0; y < listIndexModelInDb.size(); y++) {
-
-                Optional<PageModel> pageModel = pageModelRepository.findById(listIndexModelInDb.get(y).getPageModelId().getId());
-
-                if (outMap.containsKey(pageModel)) {
-                    outMap.get(pageModel).add(listIndexModelInDb.get(y));
-                } else {
-                    List<IndexModel> listForMap = new ArrayList<>();
-                    listForMap.add(listIndexModelInDb.get(y));
-                    outMap.put(pageModel.get(), listForMap);
-                }
-                // pageModelSet.add(pageModelRepository.findById(setPageModelinDB.get(y)));
-            }*/
+            }
 
 
             List<SearchData> listSearchData = new ArrayList<>();
@@ -288,61 +265,6 @@ public class SearchServiceImpl implements SearchService {
 
         return 0.0;
     }
-
-
-    //  lemmaModelRepository.findByLemmaAndSiteModelId(entry.getKey(), );
-
-
-//            lemmas.keySet().forEach(lem -> {
-//                queryLemmas.add(lem)
-//                SearchClassList searchClassList = new SearchClassList(lem.getLemma());
-//                lemmaTRepository.findAllByLemma(lem.getLemma())
-//                        .stream()
-//                        .map(lemT -> {
-//                            List<IndexModel> res;
-//                            if (site == null) {
-//                                res = indexTRepository.findAllByLemmaTByLemmaId(lemT);
-//                            } else {
-//                                res = indexTRepository.findAllByLemmaTByLemmaIdAndSiteId(lemT, searchSite);
-//                            }
-//                            return res;
-//                        })
-//                        .forEach(searchClassList::addList);
-//                searchClassAllPages.add(searchClassList);
-//            });
-//            if (searchClassAllPages.size() >= 1) {
-//                searchClassAllPages.intersectAll();
-//            }
-//            if (searchClassAllPages.size() == 0) {
-//                throw new IOException("bad request");
-//            }
-//            //
-//            //printing the sorted hashmap
-//            Set<Map.Entry<Integer, PageRel>> set = searchClassAllPages.getSortedMap().entrySet();
-//
-//            int cnt = 0;
-//            for (Map.Entry<Integer, PageRel> me2 : set) {
-//                cnt++;
-//                if (cnt <= offset) continue;
-//                if (cnt > limit + offset) break;
-//                PageT pageT = pageTRepository.findByPageId(me2.getKey());
-//                String text = pageT.getContent().replaceAll("\\s{2,}", " ").trim();
-//                Map<Integer, String> textLemList = lemmaFinder.collectLemmasList(text);
-//                String word = lemmaMap.keySet().stream().findAny().orElseThrow().getLemma();
-//                int pos = textLemList.entrySet()
-//                        .stream()
-//                        .filter(e -> e.getValue().toLowerCase(Locale.ROOT).equals(word.toLowerCase(Locale.ROOT)))
-//                        .map(Map.Entry::getKey)
-//                        .findFirst()
-//                        .orElse(0);
-//                String snippet = "..." + getAt(text, pos) + "...";
-//                SiteT siteT = siteTRepository.findByPageId(pageT.getPageId());
-//                SearchData searchData = new SearchData(siteT.getUrl(), siteT.getName(), pageT.getPath(), pageT.getTitle(), snippet, searchClassAllPages.getMapRank().get(me2.getKey()).getRelRank());
-//                searchResponse.dataAdd(searchData);
-//            }
-//            logger.log(Level.forName("DIAG", 350), "query = \t" + query);
-//            searchResponse.setResult(true);
-//            searchResponse.setCount(set.size());
 
 
     public LemmaModel getLeastFrequency(List<LemmaModel> listLemmaModel) {
