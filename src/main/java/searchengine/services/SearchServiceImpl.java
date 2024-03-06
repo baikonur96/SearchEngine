@@ -1,8 +1,12 @@
 package searchengine.services;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
+
+import org.xml.sax.InputSource;
 import searchengine.dto.search.SearchData;
 import searchengine.dto.search.SearchObj;
 import searchengine.dto.search.SearchResponse;
@@ -15,6 +19,10 @@ import searchengine.repositories.LemmaModelRepository;
 import searchengine.repositories.PageModelRepository;
 import searchengine.repositories.SiteModelRepository;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -135,30 +143,34 @@ public class SearchServiceImpl implements SearchService {
             for (Map.Entry<PageModel, List<IndexModel>> entry : mapPageIndex.entrySet()){
                 float rankPage = 0;
                     for (IndexModel indexModel : entry.getValue()){
-
                         rankPage += indexModel.getRank();
-
-
-
-//                        if (indexModel.getRank() > maxAbsRel){
-//                            maxAbsRel = indexModel.getRank();
-//                        }
-//
                     }
                     SearchObj searchObj = new SearchObj();
                     searchObj.setPageModel(entry.getKey());
                     searchObj.setListIndexModel(entry.getValue());
                     searchObj.setAbsRel(rankPage);
                     maxAbsRel = rankPage > maxAbsRel ? rankPage : maxAbsRel;
-//                    if (rankPage > maxAbsRel){
-//                            maxAbsRel = rankPage;
-//                        }
+                    listObj.add(searchObj);
+
+            }
+                //Рассчитываем и записываем Относительную релевантность
+            for ( int i = 0; i < listObj.size(); i++){
+               float relRel = listObj.get(i).getAbsRel() / maxAbsRel;
+               listObj.get(i).setRelRel(relRel);
+                System.out.println("ins: " + relRel);
+            }
+
+            //Сортируем по Относительно релевантности
+            Collections.sort(listObj, Collections.reverseOrder(Comparator.comparing(SearchObj::getRelRel)));
 
 
+            for ( int i = 0; i < listObj.size(); i++){
+                System.out.println(listObj.get(i).getRelRel());
             }
 
 
-            List<SearchData> listSearchData = new ArrayList<>();
+
+
             Map<PageModel, Float>  outMap = new LinkedHashMap<>();
             for (PageModel pageModel : setPageModelinDB) {
                 Set<IndexModel> setIndexForPage = new LinkedHashSet<>();
@@ -189,21 +201,36 @@ public class SearchServiceImpl implements SearchService {
 //                                    Map.Entry::getValue,
 //                                    (e1, e2) -> e1,
 //                                    LinkedHashMap::new));
-            for (Map.Entry<PageModel, Float> entry : resMap.entrySet()) {
-                System.out.println(entry.getKey().getPath() + " - " + entry.getValue());
-                SearchData searchData = new SearchData();
-                searchData.setSite(entry.getKey().getSiteModelId().getUrl());
-                searchData.setUri(entry.getKey().getPath().replace(entry.getKey().getSiteModelId().getUrl(), ""));
-                searchData.setSiteName(entry.getKey().getSiteModelId().getName());
-                searchData.setTitle(entry.getKey().getPath());
-                searchData.setSnippet("snippet");
-                searchData.setRelevance(entry.getValue());
-                listSearchData.add(searchData);
 
-            }
+
+            List<SearchData> listSearchData = new ArrayList<>();
+                for (int u = 0; u < listObj.size(); u++){
+                    SearchData searchData = new SearchData();
+                    searchData.setSite(listObj.get(u).getPageModel().getSiteModelId().getUrl());
+                    searchData.setSiteName(listObj.get(u).getPageModel().getSiteModelId().getName());
+
+                    String htmlText = listObj.get(u).getPageModel().getContent();
+                    List<IndexModel> indexModels = listObj.get(u).getListIndexModel();
+                   // Document doc = convertStringToDocument(htmlText);
+                    Document doc = Jsoup.parse(htmlText);
+                    Elements elements = doc.select("title");
+//                    elements.forEach(element -> {
+//                        System.out.println(element.text());
+//                    });
+
+                    searchData.setSnippet(createSnippet(htmlText, indexModels));
+                    searchData.setTitle(elements.get(0).text());
+                    searchData.setUri(listObj.get(u).getPageModel().getPath());
+                    searchData.setRelevance(listObj.get(u).getRelRel());
+                    listSearchData.add(searchData);
+
+                }
+
             searchResponse.setResult(true);
-            searchResponse.setCount(setPageModelinDB.size());
+            searchResponse.setCount(listObj.size());
             searchResponse.setData(listSearchData);
+
+
 
 
 /*            Map<PageModel, List<IndexModel>> outMap = new LinkedHashMap<>();
@@ -255,15 +282,42 @@ public class SearchServiceImpl implements SearchService {
         return null;
     }
 
-    public double mathRelevan(Set<IndexModel> indexModelSet) {
+    public String createSnippet(String text, List<IndexModel> listIndexModel) throws IOException {
+        StringBuilder result = new StringBuilder();
 
-        for (IndexModel indexModel : indexModelSet){
+
+        for (IndexModel indexModel : listIndexModel){
+
+
+
         }
 
 
 
+//        StringBuilder result = new StringBuilder();
+//        for (IndexModel indexModel : listIndexModel){
+//            System.out.println("----------");
+//            System.out.println(indexModel.getLemmaModelId().getLemma());
+//            int lemmalen = indexModel.getLemmaModelId().getLemma().length();
+//            System.out.println(text);
+//            System.out.println("**************");
+//            System.out.println(text.indexOf("тренер"));
+//            int startInd = text.lastIndexOf(indexModel.getLemmaModelId().getLemma());
+//            int endInd = startInd + lemmalen;
+//            int startTub = text.indexOf(" ", startInd - 10);
+//            int endTub = text.indexOf("</", endInd);
+//            System.out.println(startInd + "\n" + endInd + "\n" + endTub);
+//            result.append("<b>" + text.substring(startInd, endInd) + "</b> " +
+//                    text.substring(endInd, endTub) + "\n");
+//            System.out.println("+++++++++++++");
+//        }
 
-        return 0.0;
+        return result.toString();
+    }
+
+    public String createTitle(String text) throws IOException {
+        //Elements head = doc
+        return text.substring(text.indexOf("<title>") + 7, text.indexOf("</title>"));
     }
 
 
@@ -272,6 +326,22 @@ public class SearchServiceImpl implements SearchService {
 
         return new LemmaModel();
     }
+
+//    private static Document convertStringToDocument(String xmlStr) {
+//        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+//        DocumentBuilder builder;
+//        try
+//        {
+//            builder = factory.newDocumentBuilder();
+//            Document doc = builder.parse( new InputSource( new StringReader( xmlStr ) ) );
+//            return doc;
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
+
+}
 //    public String getAt(String st, int pos) {
 //        StringBuilder sb = new StringBuilder();
 //        String[] tokens = st.split(" ");
@@ -300,4 +370,4 @@ public class SearchServiceImpl implements SearchService {
 //        return sb.toString();
 //    }
 
-}
+

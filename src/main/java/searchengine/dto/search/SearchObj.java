@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 public class SearchObj {
     private PageModel pageModel;
-    private LemmaModel lemmaModel;
+   // private LemmaModel lemmaModel;
     private List<IndexModel> listIndexModel;
     private Float absRel;
     private Float relRel;
