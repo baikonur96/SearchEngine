@@ -211,15 +211,29 @@ public class SearchServiceImpl implements SearchService {
 
                     String htmlText = listObj.get(u).getPageModel().getContent();
                     List<IndexModel> indexModels = listObj.get(u).getListIndexModel();
-                   // Document doc = convertStringToDocument(htmlText);
                     Document doc = Jsoup.parse(htmlText);
-                    Elements elements = doc.select("title");
-//                    elements.forEach(element -> {
+
+
+ //                   StringBuilder result = new StringBuilder();
+
+
+//                    for (IndexModel im : indexModels){
+//                        Elements elementsSnippet = doc.select(im.getLemmaModelId().getLemma());
+//                        elementsSnippet.forEach(element -> {
+//                            System.out.println("element" + element.text());
+//                            result.append(element.text() + "\n");
+//                        });
+//
+//
+//                    }
+
+
+//                    elementsTitle.forEach(element -> {
 //                        System.out.println(element.text());
 //                    });
 
-                    searchData.setSnippet(createSnippet(htmlText, indexModels));
-                    searchData.setTitle(elements.get(0).text());
+                    searchData.setSnippet(createSnippet(doc, indexModels));
+                    searchData.setTitle(createTitle(doc));
                     searchData.setUri(listObj.get(u).getPageModel().getPath());
                     searchData.setRelevance(listObj.get(u).getRelRel());
                     listSearchData.add(searchData);
@@ -282,14 +296,55 @@ public class SearchServiceImpl implements SearchService {
         return null;
     }
 
-    public String createSnippet(String text, List<IndexModel> listIndexModel) throws IOException {
+    public String createSnippet(Document doc, List<IndexModel> listIndexModel) throws IOException {
         StringBuilder result = new StringBuilder();
+        List<String> listWords = new ArrayList<>();
+        Elements elements = doc.getAllElements();
+        //сортируем по Rank потому что нужно в первую очередь выделить слово с наименьшем rank
+        listIndexModel.sort(Comparator.comparing(IndexModel::getRank));
+        for (IndexModel indexModel : listIndexModel) {
+            listWords.add(indexModel.getLemmaModelId().getLemma());
+        }
+        String answer = searchSegSnip(elements.text(), listWords);
 
 
-        for (IndexModel indexModel : listIndexModel){
+        return answer;
+    }
+
+        public String searchSegSnip(String htmlText, List<String> listWords) {
+            StringBuilder result = new StringBuilder();
+            int indFirstWord = htmlText.indexOf(listWords.get(0));
+            int diff = htmlText.length() - indFirstWord;
+            if ( diff > 300 ){
+                int indEndTeg = htmlText.indexOf(" ", indFirstWord+250);
+            }
+
+            int indEndTeg = htmlText.indexOf(" ", indFirstWord);
+            if ((indEndTeg - indFirstWord) < 300){
+                if (htmlText.substring(0, indFirstWord).length() > 100 ){
+                    int indStartTub = htmlText.indexOf(" ", indFirstWord - 100);
+                 result.append(htmlText.substring(indStartTub, indEndTeg));
+                    return result.toString();
+                }else {
+                    if ( htmlText.substring(0, indFirstWord).length() > 50 ) {
+                        int indStartTub = htmlText.indexOf(" ", indFirstWord - 50);
+                        result.append(htmlText.substring(indStartTub, indEndTeg));
+                        return result.toString();
+                    }else {
+                        result.append(htmlText.substring(indFirstWord, indEndTeg));
+                        return result.toString();
+                    }
+
+                }
+            }
+            else {
+                int indEndTub = htmlText.indexOf(" ", indFirstWord + 250);
+                result.append(htmlText.substring(indFirstWord, indEndTub));
+            }
 
 
 
+            return result.toString();
         }
 
 
@@ -312,12 +367,11 @@ public class SearchServiceImpl implements SearchService {
 //            System.out.println("+++++++++++++");
 //        }
 
-        return result.toString();
-    }
 
-    public String createTitle(String text) throws IOException {
-        //Elements head = doc
-        return text.substring(text.indexOf("<title>") + 7, text.indexOf("</title>"));
+
+    public String createTitle(Document doc) throws IOException {
+        Elements elementsTitle = doc.select("title");
+        return elementsTitle.get(0).text();
     }
 
 
@@ -327,19 +381,7 @@ public class SearchServiceImpl implements SearchService {
         return new LemmaModel();
     }
 
-//    private static Document convertStringToDocument(String xmlStr) {
-//        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-//        DocumentBuilder builder;
-//        try
-//        {
-//            builder = factory.newDocumentBuilder();
-//            Document doc = builder.parse( new InputSource( new StringReader( xmlStr ) ) );
-//            return doc;
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        return null;
-//    }
+
 
 }
 //    public String getAt(String st, int pos) {
