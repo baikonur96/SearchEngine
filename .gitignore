@@ -2,3 +2,5 @@
 *.iws
 *.iml
 *.ipr
+stderr.log
+stdout.log

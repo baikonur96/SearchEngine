@@ -1,6 +1,9 @@
 package searchengine.services;
 
 import lombok.RequiredArgsConstructor;
+
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -35,6 +38,7 @@ public class SearchServiceImpl implements SearchService {
     private final LemmaModelRepository lemmaModelRepository;
     private final IndexModelRepository indexModelRepository;
     private List<String> queryLemmas = new ArrayList<>();
+    private static final Logger logger = LogManager.getLogger(SearchServiceImpl.class);
 
 
     @Override
@@ -234,7 +238,7 @@ public class SearchServiceImpl implements SearchService {
 
                     searchData.setSnippet(createSnippet(doc, indexModels));
                     searchData.setTitle(createTitle(doc));
-                    searchData.setUri(listObj.get(u).getPageModel().getPath());
+                    searchData.setUri(listObj.get(u).getPageModel().getPath().replaceAll(searchData.getSite(), ""));
                     searchData.setRelevance(listObj.get(u).getRelRel());
                     listSearchData.add(searchData);
 
@@ -305,42 +309,102 @@ public class SearchServiceImpl implements SearchService {
         for (IndexModel indexModel : listIndexModel) {
             listWords.add(indexModel.getLemmaModelId().getLemma());
         }
-        String answer = searchSegSnip(elements.text(), listWords);
+        String answer = searchSegSnip(elements.text().replaceAll("\\s{2,}", " ").trim(), listWords);
 
 
         return answer;
     }
 
+//    public String searchSegSnip(String htmlText, List<String> listWords) {
+//      //  StringBuilder result = new StringBuilder();
+//        int pos = htmlText.indexOf(listWords.get(0));
+//        StringBuilder sb = new StringBuilder();
+//        String[] tokens = htmlText.split(" ");
+//
+//        int pre = 10;
+//        int post = 10;
+//        if (pos < pre) {
+//            pre = pos;
+//            post = post + 10 - pos;
+//        }
+//        if (pos > tokens.length - post) {
+//            post = tokens.length - post - 1;
+//            pre = pre + (10 - post);
+//        }
+//
+//        for (int i = pos - pre; i < pos + post; i++) {
+//            if (lemmaFinder.collectLemmas(tokens[i]).size() > 0 &&
+//                    queryLemmas.contains(lemmaFinder.collectLemmas(tokens[i]).keySet().stream().findFirst().orElse(""))) {
+//                sb.append("<b>").append(tokens[i]).append("</b>");
+//            } else {
+//                sb.append(tokens[i]);
+//            }
+//            sb.append(" ");
+//        }
+//
+//        return sb.toString();
+//    }
+
         public String searchSegSnip(String htmlText, List<String> listWords) {
             StringBuilder result = new StringBuilder();
-            int indFirstWord = htmlText.indexOf(listWords.get(0));
-            int diff = htmlText.length() - indFirstWord;
-            if ( diff > 300 ){
-                int indEndTeg = htmlText.indexOf(" ", indFirstWord+250);
-            }
+            System.out.println("listwords size: " + listWords.size());
+            for (String word : listWords) {
+                System.out.println("RESULT: " + result);
+                System.out.println(word);
+                if (!result.isEmpty() && (result.indexOf(word) > 0)){
+                    System.out.println("REPEAT!!!!!!!!!!!!!!");
+                    int indRepStart = result.indexOf(word);
+                    int indRepEnd = result.indexOf(" ", indRepStart);
 
-            int indEndTeg = htmlText.indexOf(" ", indFirstWord);
-            if ((indEndTeg - indFirstWord) < 300){
-                if (htmlText.substring(0, indFirstWord).length() > 100 ){
-                    int indStartTub = htmlText.indexOf(" ", indFirstWord - 100);
-                 result.append(htmlText.substring(indStartTub, indEndTeg));
-                    return result.toString();
-                }else {
-                    if ( htmlText.substring(0, indFirstWord).length() > 50 ) {
-                        int indStartTub = htmlText.indexOf(" ", indFirstWord - 50);
-                        result.append(htmlText.substring(indStartTub, indEndTeg));
-                        return result.toString();
-                    }else {
-                        result.append(htmlText.substring(indFirstWord, indEndTeg));
-                        return result.toString();
-                    }
+                    result.insert( indRepStart - 1,"<b>");
+                    result.insert( indRepEnd + 4,"</b>");
+                    continue;
+                }
 
+
+                if (htmlText.contains(word)) {
+                    int indStartWord = htmlText.indexOf(word);
+                    int indEndWord = htmlText.indexOf(" ", indStartWord);
+                    //    int indEndWord = indStartWord + listWords.get(0).length() - 1;
+                    System.out.println("Word: " + indStartWord + " - * - " + indEndWord);
+                    int indStartPart = (indStartWord - 100) < 0 ? indStartWord - 1 : htmlText.indexOf(" ", indStartWord - 100);
+                    int indEndPart = (indEndWord + 100) > htmlText.length() ? indEndWord + 1 : htmlText.indexOf(" ", indEndWord + 70);
+                    System.out.println("Part: " + indStartPart + " - * - " + indEndPart);
+                    result.append(htmlText.substring(indStartPart, indStartWord - 1) +
+                            " <b>" + htmlText.substring(indStartWord, indEndWord) + "</b> " +
+                            htmlText.substring(indEndWord + 1, indEndPart) + "\n");
                 }
             }
-            else {
-                int indEndTub = htmlText.indexOf(" ", indFirstWord + 250);
-                result.append(htmlText.substring(indFirstWord, indEndTub));
-            }
+
+
+
+//            int diff = htmlText.length() - indStartWord;
+//            if ( diff > 300 ){
+//                int indEndTeg = htmlText.indexOf(" ", indStartWord+250);
+//            }
+//
+//            int indEndTeg = htmlText.indexOf(" ", indStartWord);
+//            if ((indEndTeg - indStartWord) < 300){
+//                if (htmlText.substring(0, indStartWord).length() > 100 ){
+//                    int indStartTub = htmlText.indexOf(" ", indStartWord - 100);
+//                 result.append(htmlText.substring(indStartTub, indEndTeg));
+//                    return result.toString();
+//                }else {
+//                    if ( htmlText.substring(0, indStartWord).length() > 50 ) {
+//                        int indStartTub = htmlText.indexOf(" ", indStartWord - 50);
+//                        result.append(htmlText.substring(indStartTub, indEndTeg));
+//                        return result.toString();
+//                    }else {
+//                        result.append(htmlText.substring(indStartWord, indEndTeg));
+//                        return result.toString();
+//                    }
+//
+//                }
+//            }
+//            else {
+//                int indEndTub = htmlText.indexOf(" ", indStartWord + 250);
+//                result.append(htmlText.substring(indStartWord, indEndTub));
+//            }
 
 
 
