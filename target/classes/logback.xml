@@ -1,40 +1,40 @@
 <configuration>
-    <appender name="STDOUT_FILE" class="ch.qos.logback.core.FileAppender">
-        <file>stdout.log</file>
-        <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
-        </encoder>
-        <fiter class="ch.qos.logback.classic.filter.LevelFilter">
-           <level>INFO</level>
-            <onMatch>ACCEPT</onMatch>
-            <onMismatch>DENY</onMismatch>
-        </fiter>
-    </appender>
-    <appender name="STDERR_FILE" class="ch.qos.logback.core.FileAppender">
-        <file>stderr.log</file>
-        <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
-        </encoder>
-        <fiter class="ch.qos.logback.classic.filter.LevelFilter">
-            <level>ERROR</level>
-            <onMatch>ACCEPT</onMatch>
-            <onMismatch>DENY</onMismatch>
-        </fiter>
-    </appender>
+<!--    <appender name="STDOUT_FILE" class="ch.qos.logback.core.FileAppender">-->
+<!--        <file>stdout.log</file>-->
+<!--        <encoder>-->
+<!--            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>-->
+<!--        </encoder>-->
+<!--        <fiter class="ch.qos.logback.classic.filter.LevelFilter">-->
+<!--           <level>INFO</level>-->
+<!--            <onMatch>ACCEPT</onMatch>-->
+<!--            <onMismatch>DENY</onMismatch>-->
+<!--        </fiter>-->
+<!--    </appender>-->
+<!--    <appender name="STDERR_FILE" class="ch.qos.logback.core.FileAppender">-->
+<!--        <file>stderr.log</file>-->
+<!--        <encoder>-->
+<!--            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>-->
+<!--        </encoder>-->
+<!--        <fiter class="ch.qos.logback.classic.filter.LevelFilter">-->
+<!--            <level>ERROR</level>-->
+<!--            <onMatch>ACCEPT</onMatch>-->
+<!--            <onMismatch>DENY</onMismatch>-->
+<!--        </fiter>-->
+<!--    </appender>-->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
         <pattern>%d{ISO8601} [%thread] %-5level %logger{36} - %msg%n</pattern>
     </encoder>
-        <fiter class="ch.qos.logback.classic.filter.LevelFilter">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>DEBUG</level>
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
-        </fiter>
+        </filter>
     </appender>
 
     <root level="debug">
-        <appender-ref ref="STDERR_FIlE" level="error" />
-        <appender-ref ref="STDOUT_FIlE" level="info" />
+<!--        <appender-ref ref="STDERR_FIlE" level="error" />-->
+<!--        <appender-ref ref="STDOUT_FIlE" level="info" />-->
         <appender-ref ref="STDOUT" level="debug" />
     </root>
 </configuration>

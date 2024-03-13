@@ -1,16 +1,16 @@
 package searchengine;
 
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import  org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class Application {
-
-    Logger logger = LogManager.getLogger(Application.class);
+    final static Logger logger = LoggerFactory.getLogger(Application.class);
     public static void main(String[] args) {
+        logger.info("start");
 
         SpringApplication.run(Application.class, args);
 

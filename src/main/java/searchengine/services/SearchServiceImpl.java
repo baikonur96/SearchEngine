@@ -2,11 +2,11 @@ package searchengine.services;
 
 import lombok.RequiredArgsConstructor;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import org.xml.sax.InputSource;
@@ -38,7 +38,7 @@ public class SearchServiceImpl implements SearchService {
     private final LemmaModelRepository lemmaModelRepository;
     private final IndexModelRepository indexModelRepository;
     private List<String> queryLemmas = new ArrayList<>();
-    private static final Logger logger = LogManager.getLogger(SearchServiceImpl.class);
+    //private static final Logger logger = LoggerFactory.getLogger(SearchServiceImpl.class);
 
 
     @Override
@@ -410,27 +410,6 @@ public class SearchServiceImpl implements SearchService {
 
             return result.toString();
         }
-
-
-
-//        StringBuilder result = new StringBuilder();
-//        for (IndexModel indexModel : listIndexModel){
-//            System.out.println("----------");
-//            System.out.println(indexModel.getLemmaModelId().getLemma());
-//            int lemmalen = indexModel.getLemmaModelId().getLemma().length();
-//            System.out.println(text);
-//            System.out.println("**************");
-//            System.out.println(text.indexOf("тренер"));
-//            int startInd = text.lastIndexOf(indexModel.getLemmaModelId().getLemma());
-//            int endInd = startInd + lemmalen;
-//            int startTub = text.indexOf(" ", startInd - 10);
-//            int endTub = text.indexOf("</", endInd);
-//            System.out.println(startInd + "\n" + endInd + "\n" + endTub);
-//            result.append("<b>" + text.substring(startInd, endInd) + "</b> " +
-//                    text.substring(endInd, endTub) + "\n");
-//            System.out.println("+++++++++++++");
-//        }
-
 
 
     public String createTitle(Document doc) throws IOException {
