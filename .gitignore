@@ -1,4 +1,5 @@
 .idea/*
+application.yml
 *.iws
 *.iml
 *.ipr
