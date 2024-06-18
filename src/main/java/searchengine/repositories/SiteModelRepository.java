@@ -32,6 +32,9 @@ public interface SiteModelRepository extends JpaRepository<SiteModel, Integer>
     @Transactional
     SiteModel findByUrl(String url);
 
+    List<SiteModel> findByStatus(StatusOption status);
+
+
     //@Query(value = "select s from SiteModel s join PageModel p on s.id = p.id where p.id =?1")
 //    @Transactional
 //    SiteModel findByPageId(int page);

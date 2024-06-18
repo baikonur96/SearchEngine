@@ -10,6 +10,7 @@ import searchengine.model.SiteModel;
 
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PageModelRepository extends JpaRepository<PageModel, Integer>
@@ -20,7 +21,7 @@ public interface PageModelRepository extends JpaRepository<PageModel, Integer>
     int countBySiteModelId(SiteModel siteModel);
 
     @Transactional
-    PageModel findByPathAndSiteModelId(String path, SiteModel siteModel);
+    Optional<PageModel> findByPathAndSiteModelId(String path, SiteModel siteModel);
 //    @Transactional
 //    PageModel findById(Integer id);
 //

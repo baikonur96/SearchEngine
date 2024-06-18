@@ -9,6 +9,7 @@ import searchengine.model.LemmaModel;
 import searchengine.model.SiteModel;
 
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface LemmaModelRepository extends JpaRepository<LemmaModel, Integer> {
@@ -36,6 +37,9 @@ public interface LemmaModelRepository extends JpaRepository<LemmaModel, Integer>
 
     @Transactional
     int countBySiteModelId(SiteModel siteModel);
+
+    List<LemmaModel> findBySiteAndLemmaInAndFrequencyLessThanEqual(SiteModel site, Set<String> lemmas,
+                                                                    int maxFrequency);
 //    @Transactional
 //    LemmaModel findByLemmaAndSiteModel(String lemma, SiteModel siteModel);
 
