@@ -2,7 +2,6 @@ package searchengine.repositories;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.sql.Timestamp;
 import java.util.regex.Pattern;
 
 public class Utils {
@@ -24,7 +23,7 @@ public class Utils {
     }
 
 
-    public static Timestamp getTimeStamp() {
-        return new Timestamp(System.currentTimeMillis());
-    }
+//    public static Timestamp getTimeStamp() {
+//        return new Timestamp(System.currentTimeMillis());
+//    }
 }

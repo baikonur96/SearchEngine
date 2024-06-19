@@ -18,6 +18,7 @@ public interface PageModelRepository extends JpaRepository<PageModel, Integer>
     @Transactional
     void deleteAllBySiteModelId(SiteModel siteModel);
 
+    @Transactional
     int countBySiteModelId(SiteModel siteModel);
 
     @Transactional

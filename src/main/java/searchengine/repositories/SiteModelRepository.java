@@ -1,6 +1,7 @@
 package searchengine.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import searchengine.model.SiteModel;
 
@@ -31,11 +32,11 @@ public interface SiteModelRepository extends JpaRepository<SiteModel, Integer>
     int countByNameAndStatus(String name, StatusOption status);
     @Transactional
     SiteModel findByUrl(String url);
-
+    @Transactional
     List<SiteModel> findByStatus(StatusOption status);
 
 
-    //@Query(value = "select s from SiteModel s join PageModel p on s.id = p.id where p.id =?1")
+//    @Query(value = "select s from SiteModel s join PageModel p on s.id = p.id where p.id =?1")
 //    @Transactional
 //    SiteModel findByPageId(int page);
 

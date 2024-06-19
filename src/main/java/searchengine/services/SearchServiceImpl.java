@@ -131,15 +131,16 @@ public class SearchServiceImpl implements SearchService {
     private List<LemmaModel> getFilteredLemmas(Set<String> queryLemmaSet, SiteModel site) {
         int pageCount = pageModelRepository.countBySiteModelId(site);
         int siteThreshold = (int) (pageCount * THRESHOLD);
-        return lemmaModelRepository.findBySiteAndLemmaInAndFrequencyLessThanEqual(site, queryLemmaSet, siteThreshold);
+        return null;
+       // return lemmaModelRepository.findBySiteAndLemmaInAndFrequencyLessThanEqual(site, queryLemmaSet, siteThreshold);
     }
 
     private List<Integer> searchPageIds(List<LemmaModel> filteredLemmas) {
         int lemmaId = filteredLemmas.get(0).getId();
-        List<Integer> cumulativePageIds = new LinkedList<>(indexModelRepository.findPageIdsByLemmaId(lemmaId));
+        List<Integer> cumulativePageIds = new ArrayList<>(); //new LinkedList<>(indexModelRepository.findPageIdsByLemmaId(lemmaId));
         for (int i = 1; i < filteredLemmas.size(); ++i) {
             lemmaId = filteredLemmas.get(i).getId();
-            List<Integer> pageIds = indexModelRepository.findPageIdsByLemmaId(lemmaId);
+            List<Integer> pageIds = new ArrayList<>();//  indexModelRepository.findPageIdsByLemmaId(lemmaId);
             cumulativePageIds.retainAll(pageIds);
             if (cumulativePageIds.isEmpty()) {
                 return Collections.emptyList();
@@ -159,9 +160,10 @@ public class SearchServiceImpl implements SearchService {
     }
 
     private List<Page> calculateAbsoluteRelevancePages(List<Integer> pageIds, List<LemmaModel> filteredLemmas) {
-        return indexModelRepository.getRankSumByPageIdsAndLemmaIds(pageIds, //суммирует все rank.lemma для опред page
-                filteredLemmas.stream().map(LemmaModel::getId).toList());
-    }
+        return null;
+//        return indexModelRepository.getRankSumByPageIdsAndLemmaIds(pageIds, //суммирует все rank.lemma для опред page
+//                filteredLemmas.stream().map(LemmaModel::getId).toList());
+   }
 
 
 

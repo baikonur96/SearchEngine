@@ -38,8 +38,8 @@ public interface LemmaModelRepository extends JpaRepository<LemmaModel, Integer>
     @Transactional
     int countBySiteModelId(SiteModel siteModel);
 
-    List<LemmaModel> findBySiteAndLemmaInAndFrequencyLessThanEqual(SiteModel site, Set<String> lemmas,
-                                                                    int maxFrequency);
+    //@Transactional
+   // List<LemmaModel> findBySiteAndLemmaInAndFrequencyLessThanEqual(SiteModel site, Set<String> lemmas, int maxFrequency);
 //    @Transactional
 //    LemmaModel findByLemmaAndSiteModel(String lemma, SiteModel siteModel);
 

@@ -18,6 +18,8 @@ import searchengine.repositories.*;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.lang.invoke.WrongMethodTypeException;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -81,7 +83,7 @@ public class PageParse extends RecursiveAction {
                 siteModel.setLastError(response.statusMessage());
                 //  throw new IOException(String.valueOf(response.statusCode()));
             }
-            siteModel.setStatusTime(Utils.getTimeStamp().toLocalDateTime());
+            siteModel.setStatusTime(LocalDateTime.now());
             siteModelRepository.save(siteModel);
 
             document = response.parse();

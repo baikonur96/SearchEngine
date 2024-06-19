@@ -1,9 +1,13 @@
 package searchengine.model;
 
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Collection;
 
 
 @Getter
@@ -21,8 +25,8 @@ public class SiteModel {
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "enum('INDEXING', 'INDEXED', 'FAILED')", nullable = false)
     private StatusOption status;
-    @Basic
-    @Column(name = "status_time", columnDefinition = "DATETIME")
+    @CreationTimestamp
+    @Column(name = "status_time", columnDefinition = "DATETIME", nullable = false)
     private LocalDateTime statusTime;
     @Column(name = "last_error", columnDefinition = "TEXT")
     private String lastError;
@@ -30,6 +34,9 @@ public class SiteModel {
     private String url;
     @Column(name = "name", nullable = false, columnDefinition = "VARCHAR(255)")
     private String name;
+//    @OnDelete(action = OnDeleteAction.CASCADE)
+//    @OneToMany(mappedBy = "siteTBySiteId", cascade = CascadeType.MERGE)
+//    private Collection<LemmaModel> lemmaModelBySiteId;
 
 
 }
