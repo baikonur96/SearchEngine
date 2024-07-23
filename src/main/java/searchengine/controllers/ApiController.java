@@ -11,11 +11,6 @@ import searchengine.services.SearchQueryBuilder;
 import searchengine.services.SearchService;
 import searchengine.services.StatisticsService;
 
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ForkJoinPool;
-
 @RestController
 @RequestMapping("/api")
 public class ApiController {
@@ -38,7 +33,7 @@ public class ApiController {
 
     @GetMapping("/startIndexing")
     public ResponseEntity<IndexingResponse> StartIndex() {
-            return ResponseEntity.ok(indexingService.getStartIndexing());
+        return ResponseEntity.ok(indexingService.getStartIndexing());
     }
 
     @GetMapping("/stopIndexing")
@@ -49,10 +44,6 @@ public class ApiController {
 
     @PostMapping("/indexPage")
     public ResponseEntity<IndexingResponse> AddUpdateIndex(@RequestParam String url) {
-//        Boolean response = true;
-//        String sessionId = RequestContextHolder.currentRequestAttributes().getSessionId();
-//        System.out.println(url);
-
         return ResponseEntity.ok(indexingService.indexPage(url));
     }
 
