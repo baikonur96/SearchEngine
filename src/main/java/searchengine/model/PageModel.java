@@ -26,5 +26,8 @@ public class PageModel {
     private int code;
     @Column(columnDefinition = "LONGTEXT", nullable = false)
     private String content;
+//    @ManyToOne
+//    @JoinColumn(name = "site_id", referencedColumnName = "site_id", nullable = false, insertable = false, updatable = false)
+//    private SiteModel siteModelBySiteId;
 
 }

@@ -2,6 +2,8 @@ package searchengine.services;
 
 
 import java.io.PrintWriter;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -76,7 +78,7 @@ public class IndexingServiceImpl implements IndexingService {
                     }
                     SiteModel siteModel = new SiteModel();
                     siteModel.setStatus(StatusOption.INDEXING);
-                    siteModel.setStatusTime(Utils.getTimeStamp());
+                    siteModel.setStatusTime(LocalDateTime.now());
                     siteModel.setUrl(UpdateUrl(site.getUrl()));
                     siteModel.setName(site.getName());
                     siteModelRepository.save(siteModel);
@@ -117,7 +119,7 @@ public class IndexingServiceImpl implements IndexingService {
                       //  .filter(e -> e.getStatus() == StatusOption.INDEXING)
                         .forEach(e -> {
                             e.setStatus(StatusOption.FAILED);
-                            e.setStatusTime(Utils.getTimeStamp());
+                            e.setStatusTime(LocalDateTime.now());
                             e.setLastError("Индексация остановлена пользователем");
                         });
                 siteModelRepository.saveAll(siteModelList);

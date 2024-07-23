@@ -1,5 +1,6 @@
 package searchengine.dto.search;
 
+import jdk.jshell.Snippet;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +13,7 @@ public class SearchData {
     private String siteName;
     private String uri;
     private  String title;
-    private  String snippet;
+    private Snippet snippet;
     private double relevance;
 
 

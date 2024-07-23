@@ -78,9 +78,6 @@ public class LemmaFinder  {
                 luceneMorphology = morphologyEng;
             }
 
-//            if (morphInfo.matches(WORD_TYPE_REGEX)) {
-//                return false;
-//            }
             try {
                 List<String> wordBaseForms = luceneMorphology.getMorphInfo(word);
                 if (anyWordBaseBelongToParticle(wordBaseForms)) {
@@ -106,6 +103,8 @@ public class LemmaFinder  {
 
         return lemmas;
     }
+
+
 
 
 

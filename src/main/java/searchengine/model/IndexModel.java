@@ -10,8 +10,8 @@ import javax.persistence.*;
 @Setter
 @RequiredArgsConstructor
 @NoArgsConstructor
-@Entity
 @Table(name = "index")
+@Entity
 public class IndexModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,8 +21,11 @@ public class IndexModel {
     @JoinColumn(name = "page_id", nullable = false, insertable = false, updatable = false)
     private PageModel pageModelId;
     @ManyToOne(targetEntity = LemmaModel.class)
-    @JoinColumn(name = "lemma_id", nullable = false)
+    @JoinColumn(name = "lemma_id", nullable = false) // insertable = false, updatable = false)
     private LemmaModel lemmaModelId;
     @Column(name = "ranks")
     private float rank;
+//    @ManyToOne
+//    @JoinColumn(name = "lemma_id", referencedColumnName = "lemma_id", nullable = false, insertable = false, updatable = false)
+//    private LemmaModel lemmaModelByLemmaId;
 }

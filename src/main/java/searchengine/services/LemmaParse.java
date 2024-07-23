@@ -76,7 +76,6 @@ public class LemmaParse {
 
         } catch (Exception e) {
             System.out.println("Ошибка - parsePage" + pageModel.getPath() );
-
             e.printStackTrace();
         }
 

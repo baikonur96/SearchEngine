@@ -10,6 +10,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
+import searchengine.model.LemmaModel;
 import searchengine.model.PageModel;
 import searchengine.model.SiteModel;
 import searchengine.repositories.*;
@@ -17,8 +18,11 @@ import searchengine.repositories.*;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.lang.invoke.WrongMethodTypeException;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RecursiveTask;
@@ -28,6 +32,7 @@ import java.util.concurrent.RecursiveTask;
 @Setter
 @RequiredArgsConstructor
 public class PageParse extends RecursiveAction {
+    private static final double THRESHOLD = 0.8;
     private final PageModelRepository pageModelRepository;
     private final SiteModelRepository siteModelRepository;
     private final LemmaModelRepository lemmaModelRepository;
@@ -53,6 +58,9 @@ public class PageParse extends RecursiveAction {
         }
         return false;
     }
+
+
+
     @Transactional
     public List<String> ParseLink(String link) {
         List<String> outputList = new ArrayList<>();
@@ -75,7 +83,7 @@ public class PageParse extends RecursiveAction {
                 siteModel.setLastError(response.statusMessage());
                 //  throw new IOException(String.valueOf(response.statusCode()));
             }
-            siteModel.setStatusTime(Utils.getTimeStamp());
+            siteModel.setStatusTime(LocalDateTime.now());
             siteModelRepository.save(siteModel);
 
             document = response.parse();

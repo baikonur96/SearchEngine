@@ -14,6 +14,7 @@ import searchengine.repositories.LemmaModelRepository;
 import searchengine.repositories.PageModelRepository;
 import searchengine.repositories.SiteModelRepository;
 
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -64,7 +65,7 @@ public class StatisticsServiceImpl implements StatisticsService {
             item.setLemmas(lemmas);
             item.setStatus(siteModel.getStatus().toString());
             item.setError(siteModel.getLastError());
-            item.setStatusTime(siteModel.getStatusTime().getTime());
+            item.setStatusTime(siteModel.getStatusTime().toEpochSecond(ZoneOffset.UTC) * 1000);
             total.setPages(total.getPages() + pages);
             total.setLemmas(total.getLemmas() + lemmas);
             detailed.add(item);
