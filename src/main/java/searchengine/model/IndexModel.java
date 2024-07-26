@@ -1,31 +1,32 @@
 package searchengine.model;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 @Getter
 @Setter
 @RequiredArgsConstructor
 @NoArgsConstructor
-@Table(name = "index")
 @Entity
+@Table(name = "index")
 public class IndexModel {
-    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
     @Column(name = "index_id", nullable = false)
-    private Integer indexId;
-    @ManyToOne(targetEntity = PageModel.class)
-    @JoinColumn(name = "page_id", nullable = false, insertable = false, updatable = false)
-    private PageModel pageModelId;
-    @ManyToOne(targetEntity = LemmaModel.class)
-    @JoinColumn(name = "lemma_id", nullable = false) // insertable = false, updatable = false)
-    private LemmaModel lemmaModelId;
-    @Column(name = "ranks")
+    private int indexId;
+    @NonNull
+    @Column(name = "page_id", nullable = false)
+    private int pageId;
+    @Column(name = "lemma_id", nullable = false)
+    @NonNull
+    private int lemmaId;
+    @NonNull
+    @Column(name = "rank", nullable = false)
     private float rank;
-//    @ManyToOne
-//    @JoinColumn(name = "lemma_id", referencedColumnName = "lemma_id", nullable = false, insertable = false, updatable = false)
-//    private LemmaModel lemmaModelByLemmaId;
+    @ManyToOne
+    @JoinColumn(name = "page_id", referencedColumnName = "page_id", nullable = false, insertable = false, updatable = false)
+    private PageModel pageModelByPageId;
+    @ManyToOne
+    @JoinColumn(name = "lemma_id", referencedColumnName = "lemma_id", nullable = false, insertable = false, updatable = false)
+    private LemmaModel lemmaModelByLemmaId;
 }

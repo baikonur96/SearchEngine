@@ -23,7 +23,7 @@ public class Utils {
     }
 
 
-//    public static Timestamp getTimeStamp() {
-//        return new Timestamp(System.currentTimeMillis());
-//    }
+    public static Timestamp getTimeStamp() {
+        return new Timestamp(System.currentTimeMillis());
+    }
 }

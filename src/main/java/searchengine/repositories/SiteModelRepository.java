@@ -24,7 +24,7 @@ public interface SiteModelRepository extends JpaRepository<SiteModel, Integer>
     @Transactional
     List<SiteModel> findAll();
 
-     @Transactional
+    @Transactional
     void deleteAllByName(String name);
     @Transactional
     void deleteAllByUrl(String url);

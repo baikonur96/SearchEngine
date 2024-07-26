@@ -7,21 +7,14 @@ import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.jsoup.nodes.Document;
-import searchengine.config.Site;
-import searchengine.config.SitesList;
-import searchengine.model.PageModel;
 import searchengine.model.SiteModel;
 import searchengine.repositories.*;
 
 import java.io.IOException;
-import java.lang.invoke.WrongMethodTypeException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 import java.util.concurrent.*;
 
 import static java.util.concurrent.ForkJoinTask.invokeAll;
@@ -39,9 +32,11 @@ public class SiteParse implements Runnable {
     private final IndexModelRepository indexModelRepository;
     private final LemmaParse lemmaParse;
 
-    private Connection.Response response;
-    Integer siteId;
-    String siteUrl;
+    private ForkJoinPool pool;
+    private String domain;
+    private String url;
+    private int parallelism;
+    private SiteModel siteModel;
 
     public SiteParse copy() {
         return new SiteParse(this.pageModelRepository,
@@ -49,6 +44,13 @@ public class SiteParse implements Runnable {
                 this.lemmaModelRepository,
                 this.indexModelRepository,
                 this.lemmaParse);
+    }
+
+    public void init(SiteModel siteModel, int parallelism) {
+        this.url = siteModel.getUrl();
+        this.domain = Utils.getProtocolAndDomain(url);
+        this.parallelism = parallelism;
+        this.siteModel = siteModel;
     }
 
     public boolean CorrectUrl(String startLink, String link) {

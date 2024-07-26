@@ -26,7 +26,10 @@ public interface IndexModelRepository extends JpaRepository<IndexModel, Integer>
 //    List<Page> getRankSumByPageIdsAndLemmaIds(List<Integer> pageIds, List<Integer> lemmaIds);
 
     @Transactional
-    List<IndexModel> findAllByLemmaModelId(LemmaModel lemmaModel);
+    List<IndexModel> findAllByLemmaId(LemmaModel lemmaModel);
+
+    @Transactional
+    List<IndexModel> findByPageModelByPageId(PageModel pageModel);
 
     //@Query("select i from IndexModel i join PageModel p on p.id = i.pageModelId where i.lemmaModelByLemmaId = ?1 and p.siteModelBySiteId = ?2")
     //List<IndexModel> findAllByLemmaModelIdAndPageModelId(LemmaModel lemmaModel, SiteModel siteModel);

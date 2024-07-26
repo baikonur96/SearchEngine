@@ -12,15 +12,12 @@ import searchengine.services.SearchQueryBuilder;
 import searchengine.services.SearchService;
 import searchengine.services.StatisticsService;
 
-<<<<<<< HEAD
-=======
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
 
 @RequiredArgsConstructor
->>>>>>> 8e443329ef01fdcba4a4ff7ec9d9bfdc611c6910
 @RestController
 @RequestMapping("/api")
 public class ApiController {
@@ -64,14 +61,13 @@ public class ApiController {
             @RequestParam(value = "site", required = false) String site,
             @RequestParam(defaultValue = DEFAULT_OFFSET, required = false) Integer offset,
             @RequestParam(defaultValue = DEFAULT_LIMIT, required = false) Integer limit) {
-//        SearchQueryBuilder sb = SearchQueryBuilder.newBuilder()
-//                .withQuery(query)
-//                .withSite(site)
-//                .withOffset(offset)
-//                .withLimit(limit)
-//                .build();
-        return ResponseEntity.ok(searchService.search(query, site, offset, limit));
-     //   return ResponseEntity.ok(searchService.search(sb.getQuery(), sb.getSite(), sb.getOffset(), sb.getLimit()));
+        SearchQueryBuilder sb = SearchQueryBuilder.newBuilder()
+                .withQuery(query)
+                .withSite(site)
+                .withOffset(offset)
+                .withLimit(limit)
+                .build();
+        return ResponseEntity.ok(searchService.search(sb.getQuery(), sb.getSite(), sb.getOffset(), sb.getLimit()));
     }
 
 }

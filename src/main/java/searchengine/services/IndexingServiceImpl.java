@@ -3,26 +3,22 @@ package searchengine.services;
 
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import java.util.Vector;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ThreadPoolExecutor;
 
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import searchengine.config.Site;
 import searchengine.config.SitesList;
 import searchengine.dto.indexing.IndexingResponse;
-import searchengine.model.PageModel;
 import searchengine.model.SiteModel;
 import searchengine.model.StatusOption;
 import searchengine.repositories.*;
@@ -30,14 +26,15 @@ import searchengine.repositories.*;
 @Service
 @RequiredArgsConstructor
 public class IndexingServiceImpl implements IndexingService {
-    private final PageModelRepository pageModelRepository;
+    private static final Logger logger = LogManager.getLogger(IndexingServiceImpl.class);
+   // private final PageModelRepository pageModelRepository;
     private final SiteModelRepository siteModelRepository;
-    private final LemmaModelRepository lemmaModelRepository;
-    private final IndexModelRepository indexModelRepository;
-    private final LemmaParse lemmaParse;
+   // private final LemmaModelRepository lemmaModelRepository;
+   // private final IndexModelRepository indexModelRepository;
+   // private final LemmaParse lemmaParse;
     private final List<SiteModel> siteModelList = new Vector<>();
     private final SitesList sites;
-    private final SiteParse siteP;
+    private final SiteParse siteParse;
 
 
     public String UpdateUrl(String url){
@@ -72,29 +69,25 @@ public class IndexingServiceImpl implements IndexingService {
                     String name = site.getName();
                     Optional<List<SiteModel>> byName = siteModelRepository.findByName(name);
                     if (byName.isPresent()) {
-                        SiteModel siteModel = siteModelRepository.findByUrl(UpdateUrl(site.getUrl().trim()));
-                        pageModelRepository.deleteAllBySiteModelId(siteModel);
+                      //  SiteModel siteModel = siteModelRepository.findByUrl(UpdateUrl(site.getUrl().trim()));
+                      //  pageModelRepository.deleteAllBySiteModelId(siteModel);
                         siteModelRepository.deleteAllByName(name);
                     }
-                    SiteModel siteModel = new SiteModel();
-                    siteModel.setStatus(StatusOption.INDEXING);
-                    siteModel.setStatusTime(LocalDateTime.now());
-                    siteModel.setUrl(UpdateUrl(site.getUrl()));
-                    siteModel.setName(site.getName());
+                    SiteModel siteModel = new SiteModel(StatusOption.INDEXING, Utils.getTimeStamp(), site.getUrl(), name);
+//                    siteModel.setStatus(StatusOption.INDEXING);
+//                    siteModel.setStatusTime(LocalDateTime.now());
+//                    siteModel.setUrl(UpdateUrl(site.getUrl()));
+//                    siteModel.setName(site.getName());
                     siteModelRepository.save(siteModel);
                     siteModelList.add(siteModel);
-                    System.out.println("Отдал в поток " + siteModel.getName());
-                    SiteParse siteParse = siteP.copy();
+                   // System.out.println("Отдал в поток " + siteModel.getName());
+                    SiteParse sitePa = siteParse.copy();
+                    sitePa.init(siteModel, 3);
                    // SiteParse siteParse = new SiteParse(pageModelRepository, siteModelRepository);
-                    siteParse.setSiteId(siteModel.getId());
-                    siteParse.setSiteUrl(siteModel.getUrl());
-                    executor.submit(siteParse);
+                    executor.execute(siteParse);
                 }
-
                 response.setResult(true);
             }
-
-
         } catch (Exception e) {
             e.printStackTrace();
         }
